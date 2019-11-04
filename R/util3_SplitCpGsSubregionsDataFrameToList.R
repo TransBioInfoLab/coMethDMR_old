@@ -39,7 +39,7 @@ SplitCpGDFbyRegion <- function(CpGsSubregions_df,
 
     ### Split CpGs-Subregions dataframe to list ###
     subRegion_ls <- split(
-      CpGsSubregions_df$ProbeID, CpGsSubregions_df$Subregion
+      CpGsSubregions_df$ProbeID %>% as.character, CpGsSubregions_df$Subregion
     )
 
     ### Output dataframes with annotation for each subregions ###

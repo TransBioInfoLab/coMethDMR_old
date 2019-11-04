@@ -201,7 +201,7 @@ The pre-computed genomic regions can be accessed using the following commands. F
 gene_ls <- readRDS(
   system.file (
     "extdata",
-    "450k_Gene_3_200.RDS",
+    "450k_Gene_3_200.rds",
     package = 'coMethDMR',
     mustWork = TRUE
     )
@@ -345,7 +345,7 @@ Finally, we demonstrate coMethDMR analysis for a particular gene, for example th
 geneList <- readRDS(
         system.file(
           "extdata",
-          "450k_CpGstoGene_min3CpGs.RDS",
+          "450k_CpGstoGene_min3CpGs.rds",
           package = 'coMethDMR',
           mustWork = TRUE
         )
