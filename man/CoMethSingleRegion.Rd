@@ -6,8 +6,9 @@
   pre-defined genomic region}
 \usage{
 CoMethSingleRegion(CpGs_char, dnam, betaToM = TRUE,
-  rDropThresh_num = 0.4, method = c("pearson", "spearman"),
-  minCpGs = 3, arrayType = c("450k", "EPIC"), returnAllCpGs = FALSE)
+  rDropThresh_num = 0.4, minPairwiseCorr = 0.2, method = c("pearson",
+  "spearman"), minCpGs = 3, arrayType = c("450k", "EPIC"),
+  returnAllCpGs = FALSE)
 }
 \arguments{
 \item{CpGs_char}{vector of CpGs in the inputting pre-defined genomic region.}

@@ -63,7 +63,9 @@ CreateOutputDF <- function(keepCpGs_df,
       MAPINFO = output3_df$pos,
       r_drop = output3_df$r_drop,
       keep = output3_df$keep,
-      keep_contiguous = output3_df$Subregion
+      keep_contiguous = output3_df$Subregion,
+      regionMinPairwiseCor = output3_df$minPairwiseCorlist,
+      keep_regionMinPairwiseCor = output3_df$keepminPairwiseCor
     )
 
     coMethCpGs_df

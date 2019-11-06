@@ -44,8 +44,6 @@
 #'    data(betaMatrix_ex4)
 #'    MarkComethylatedCpGs(betaCluster_mat = betaMatrix_ex4, rDropThresh_num = 0.6, method = "pearson")
 #'
-
-
 MarkComethylatedCpGs <- function (betaCluster_mat,
                                   betaToM = TRUE,
                                   rDropThresh_num = 0.4,

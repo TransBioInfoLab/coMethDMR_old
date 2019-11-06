@@ -6,8 +6,8 @@
   pre-defined genomic regions}
 \usage{
 CoMethAllRegions(dnam, betaToM = FALSE, method = c("pearson",
-  "spearman"), rDropThresh_num = 0.4, minCpGs = 3,
-  arrayType = c("450k", "EPIC"), CpGs_ls, file = NULL,
+  "spearman"), rDropThresh_num = 0.4, minPairwiseCorr = 0.2,
+  minCpGs = 3, arrayType = c("450k", "EPIC"), CpGs_ls, file = NULL,
   returnAllCpGs = FALSE, output = c("CpGs", "dataframe"),
   nCores_int = 1L, ...)
 }
@@ -70,7 +70,7 @@ There are two ways to input genomic regions
 for this function: (1) use \code{CpGs_ls} argument
 (2) use \code{file} argument
 
-examples of these files are at https://github.com/lissettegomez/coMethDMRdata
+examples of these files are in /inst/extdata/ folder of the package.
 }
 \examples{
    data(betasChr22_df)

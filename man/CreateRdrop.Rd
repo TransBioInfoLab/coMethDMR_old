@@ -2,7 +2,8 @@
 % Please edit documentation in R/CreateRdrop.R
 \name{CreateRdrop}
 \alias{CreateRdrop}
-\title{Computes leave-one-out correlations (rDrop) for each CpG}
+\title{Computes leave-one-out correlations (rDrop) for each CpG
+and the minimun Pairwise Correlation}
 \usage{
 CreateRdrop(data, method = c("pearson", "spearman"))
 }
@@ -18,10 +19,12 @@ A data frame with the following columns:
   \item{\code{CpG} : }{CpG ID}
   \item{\code{r_drop} : }{The correlation between each CpG with the sum of
   the rest of the CpGs}
+  \item{\code{minpairWiseCorr} : }{The min correlation between each CpG the rest of the CpGs}
 }
 }
 \description{
 Computes leave-one-out correlations (rDrop) for each CpG
+and the minimun Pairwise Correlation
 }
 \details{
 An outlier CpG in a genomic region will typically have low correlation with the rest of
@@ -31,9 +34,5 @@ An outlier CpG in a genomic region will typically have low correlation with the 
 }
 \examples{
    data(betaMatrix_ex1)
-
    CreateRdrop(data = betaMatrix_ex1, method = "pearson")
-
-
-
 }
