@@ -68,76 +68,79 @@ CoMethSingleRegion <- function(CpGs_char,
                                arrayType = c("450k","EPIC"),
                                returnAllCpGs = FALSE){
 
-    arrayType <- match.arg(arrayType)
-    method <- match.arg(method)
+  arrayType <- match.arg(arrayType)
+  method <- match.arg(method)
 
-    ### Order CpGs by genomic location ###
-    CpGsOrdered_df <- OrderCpGsByLocation(
-        CpGs_char, arrayType, output = "dataframe"
+  ### Order CpGs by genomic location ###
+  CpGsOrdered_df <- OrderCpGsByLocation(
+    CpGs_char, arrayType, output = "dataframe"
+  )
+
+  ### Extract beta matrix for the input CpGs ###
+  # take common cpgs in beta matrix and the region first
+  commonCpGs_char <- intersect (CpGsOrdered_df$cpg, row.names(dnam))
+
+  if (length(commonCpGs_char) >= minCpGs){
+
+    betaCluster_mat <- dnam[commonCpGs_char, ]
+
+    ### Transpose beta matrix ###
+    betaClusterTransp_mat <- t(betaCluster_mat)
+
+    ### Mark comethylated CpGs ###
+    keepCpGs_df <- MarkComethylatedCpGs(
+      betaCluster_mat = betaClusterTransp_mat,
+      method = method,
+      betaToM = betaToM,
+      rDropThresh_num = rDropThresh_num
     )
 
-    ### Extract beta matrix for the input CpGs ###
-    # take common cpgs in beta matrix and the region first
-    commonCpGs_char <- intersect (CpGsOrdered_df$cpg, row.names(dnam))
+    ### Find contiguous comethylated regions ###
+    keepContiguousCpGs_df <- FindComethylatedRegions(
+      CpGs_df = keepCpGs_df
+    )
 
-    if (length(commonCpGs_char) >= minCpGs){
-
-        betaCluster_mat <- dnam[commonCpGs_char, ]
-
-        ### Transpose beta matrix ###
-        betaClusterTransp_mat <- t(betaCluster_mat)
-
-        ### Mark comethylated CpGs ###
-        keepCpGs_df <- MarkComethylatedCpGs(
-            betaCluster_mat = betaClusterTransp_mat,
-            method = method,
-            betaToM = betaToM,
-            rDropThresh_num = rDropThresh_num
-        )
-
-        ### Find contiguous comethylated regions ###
-        keepContiguousCpGs_df <- FindComethylatedRegions(
-            CpGs_df = keepCpGs_df
-        )
-
-        ### Split CpG dataframe by Subregion ###
-        keepContiguousCpGs_ls <- SplitCpGDFbyRegion(
-            keepContiguousCpGs_df, arrayType, returnAllCpGs
-        )
+    ### Split CpG dataframe by Subregion ###
+    keepContiguousCpGs_ls <- SplitCpGDFbyRegion(
+      keepContiguousCpGs_df, arrayType, returnAllCpGs
+    )
 
 
-        ### calculate minPairwiseCor and subset for each subregion
-        ### and add information to df
-        pairwiseResults <- minPairwiseCor(
-            betaCluster_mat = betaClusterTransp_mat,
-            method = method,
-            betaToM = betaToM,
-            minPairwiseCorr = minPairwiseCorr,
-            probes.list = keepContiguousCpGs_ls,
-            subregions.annot = keepContiguousCpGs_df
-        )
-        keepContiguousCpGs_df <- pairwiseResults$keepContiguousCpGs_df
+    ### calculate minPairwiseCor and subset for each subregion
+    ### and add information to df
+    pairwiseResults <- minPairwiseCor(
+      betaCluster_mat = betaClusterTransp_mat,
+      method = method,
+      betaToM = betaToM,
+      minPairwiseCorr = minPairwiseCorr,
+      probes.list = keepContiguousCpGs_ls
+    )
+    keepminPairwiseCor.df <- pairwiseResults$keepminPairwiseCor.df
 
-        # if returnAllCpGs no filtering
-        if(!returnAllCpGs){
-            keepContiguousCpGs_ls <- pairwiseResults$probes.list.filtered
-        }
-        ### Create Output Data Frame  ###
-        coMethCpGs_df <- CreateOutputDF(
-            keepCpGs_df, keepContiguousCpGs_df, CpGsOrdered_df, returnAllCpGs
-        )
-
-        ### Create output list of data frame and CpGs by subregion ###
-        coMethCpGs_ls <- list(
-            contiguousRegions = coMethCpGs_df,
-            CpGsSubregions = keepContiguousCpGs_ls
-        )
-
-        coMethCpGs_ls
-
-    } else {
-        return(NULL)
+    # if returnAllCpGs no filtering
+    if(!returnAllCpGs){
+      keepContiguousCpGs_ls <- pairwiseResults$probes.list.filtered
     }
+    ### Create Output Data Frame  ###
+    coMethCpGs_df <- CreateOutputDF(
+      keepCpGs_df = keepCpGs_df,
+      keepContiguousCpGs_df = keepContiguousCpGs_df,
+      CpGsOrdered_df =  CpGsOrdered_df,
+      returnAllCpGs =  returnAllCpGs,
+      keepminPairwiseCor.df = keepminPairwiseCor.df
+    )
+
+    ### Create output list of data frame and CpGs by subregion ###
+    coMethCpGs_ls <- list(
+      contiguousRegions = coMethCpGs_df,
+      CpGsSubregions = keepContiguousCpGs_ls
+    )
+
+    coMethCpGs_ls
+
+  } else {
+    return(NULL)
+  }
 
 
 

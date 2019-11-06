@@ -7,6 +7,8 @@
 #'    Subregion = cotiguous comethylated subregion number
 #' @param CpGsOrdered_df a data frame of CpG location with
 #'    chr = chromosome number, pos = genomic position, cpg = CpG name
+#' @param keepminPairwiseCor.df a data frame with
+#'    Subregion = cotiguous comethylated subregion number
 #' @param returnAllCpGs indicates if outputting all the CpGs in the region
 #'    when there is not a contiguous comethylated region or
 #'    only the CpGs in the contiguous comethylated regions
@@ -19,7 +21,7 @@
 #'    keep_contiguous = cotiguous comethylated subregion number
 #'
 #' @keywords internal
-#'
+#' @importFrom dplyr left_join
 #' @export
 #'
 #' @examples
@@ -34,10 +36,13 @@
 #'    betaClusterTransp_mat <- t(betaCluster_mat)
 #'    keepCpGs_df <- MarkComethylatedCpGs(betaCluster_mat = betaClusterTransp_mat)
 #'    keepContiguousCpGs_df <- FindComethylatedRegions(CpGs_df = keepCpGs_df)
-#'    CreateOutputDF(keepCpGs_df, keepContiguousCpGs_df, CpGsOrdered_df)
+#'    pairwiseCor <- minPairwiseCor(betaClusterTransp_mat,probes.list = list(CpGsChr22_char))
+#'    keepminPairwiseCor.df <- pairwiseCor$keepminPairwiseCor.df
+#'    CreateOutputDF(keepCpGs_df, keepContiguousCpGs_df, CpGsOrdered_df,keepminPairwiseCor.df)
 CreateOutputDF <- function(keepCpGs_df,
                            keepContiguousCpGs_df,
                            CpGsOrdered_df,
+                           keepminPairwiseCor.df,
                            returnAllCpGs = FALSE){
 
   if (returnAllCpGs == FALSE & all(keepContiguousCpGs_df$Subregion == 0)){
@@ -53,7 +58,12 @@ CreateOutputDF <- function(keepCpGs_df,
       CpGsOrdered_df, output_df, by.x = "cpg", by.y = "CpG"
     )
 
-    output3_df <- output2_df[order(output2_df$chr, output2_df$pos), ]
+    output3_df <- left_join(
+      output2_df, keepminPairwiseCor.df, by = "Subregion"
+    )
+
+
+    output3_df <- output3_df[order(output3_df$chr, output3_df$pos), ]
     output3_df [is.na(output3_df)] <- 0
 
     coMethCpGs_df <- data.frame(
@@ -64,7 +74,7 @@ CreateOutputDF <- function(keepCpGs_df,
       r_drop = output3_df$r_drop,
       keep = output3_df$keep,
       keep_contiguous = output3_df$Subregion,
-      regionMinPairwiseCor = output3_df$minPairwiseCorlist,
+      regionMinPairwiseCor = output3_df$minPairwiseCor,
       keep_regionMinPairwiseCor = output3_df$keepminPairwiseCor
     )
 

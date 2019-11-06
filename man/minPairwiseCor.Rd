@@ -5,8 +5,7 @@
 \title{Calculate min Pairwise correlation for subregions probes}
 \usage{
 minPairwiseCor(betaCluster_mat, betaToM = TRUE, minPairwiseCorr = 0.2,
-  probes.list, subregions.annot = NULL, method = c("pearson",
-  "spearman"))
+  probes.list, method = c("pearson", "spearman"))
 }
 \arguments{
 \item{betaCluster_mat}{matrix of beta values, with rownames = sample ids,
@@ -20,9 +19,6 @@ rest of the CpGs}
 
 \item{probes.list}{list of regions with cpgs}
 
-\item{subregions.annot}{A dataframe with probes, subregion that will be returned
-with the minPairwise correlation and if probe should be kept.}
-
 \item{method}{correlation method, can be pearson or spearman}
 }
 \value{
@@ -35,16 +31,14 @@ Calculate min Pairwise correlation for subregions probes
 \examples{
 data(betaMatrix_ex1)
 probes <- colnames(betaMatrix_ex1)
-minPairwiseCor(betaCluster_mat = betaMatrix_ex1, 
-               betaToM = FALSE, 
-                minPairwiseCorr = 0.1,
-                probes.list = list("chr22:18531243-18531447" = probes),
-               method = "pearson",
-               subregions.annot = data.frame(probes,Subregion = rep(1,length(probes))))
-minPairwiseCor(betaCluster_mat = betaMatrix_ex1, 
-               betaToM = FALSE, 
-                minPairwiseCorr = 0.2,
-                probes.list = list("chr22:18531243-18531447" = probes),
-               method = "pearson",
-               subregions.annot = data.frame(probes,Subregion = rep(1,length(probes))))
+minPairwiseCor(betaCluster_mat = betaMatrix_ex1,
+               betaToM = FALSE,
+               minPairwiseCorr = 0.1,
+               probes.list = list("chr22:18531243-18531447" = probes),
+               method = "pearson")
+minPairwiseCor(betaCluster_mat = betaMatrix_ex1,
+               betaToM = FALSE,
+               minPairwiseCorr = 0.2,
+               probes.list = list("chr22:18531243-18531447" = probes),
+               method = "pearson")
 }
