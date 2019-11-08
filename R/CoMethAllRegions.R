@@ -132,12 +132,12 @@ CoMethAllRegions <- function(dnam,
   # Return list of contiguous comethylated CpGs by Regions
   if(output == "CpGs"){
 
-    unique(
-      unlist(
-        lapply(coMethCpGsAllREgions_ls, `[[`, 2),
-        recursive = FALSE
-      )
+
+    unlist(
+      lapply(coMethCpGsAllREgions_ls, `[[`, 2),
+      recursive = FALSE
     )
+
 
   } else {
 
