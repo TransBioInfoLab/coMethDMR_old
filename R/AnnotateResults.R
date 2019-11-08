@@ -63,6 +63,7 @@ AnnotateResults <- function(lmmRes_df,
         all(c("chrom", "start", "end") %in% colnames(lmmRes_df))
     )
     arrayType <- match.arg(arrayType)
+    checkAnnotationPkg(arrayType)
 
     lmmRes_df$start <- as.integer(lmmRes_df$start)
     lmmRes_df$end   <- as.integer(lmmRes_df$end)

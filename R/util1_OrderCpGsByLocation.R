@@ -19,6 +19,7 @@
 OrderCpGsByLocation <- function(CpGs_char, arrayType = c("450k","EPIC"), output = c("vector", "dataframe")){
 
   arrayType <- match.arg(arrayType)
+  checkAnnotationPkg(arrayType)
 
   switch(arrayType,
          "450k" = {
