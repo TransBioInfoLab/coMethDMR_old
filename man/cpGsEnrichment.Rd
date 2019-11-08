@@ -18,9 +18,13 @@ cpGsEnrichment(fg.probes, bg.probes, fg.label = "foreground",
 
 \item{bg.label}{Background label}
 
-\item{plot.filename}{filename of the barplot}
+\item{tab.filename}{Table file name (csv file). Default no file will be output.}
 
-\item{plot}{create a bar plot of frequncy for foreground and background ? Default TRUE.}
+\item{arrayType}{Type of array, 450k or EPIC}
+
+\item{save.plot}{create a bar plot of frequncy for foreground and background ? Default TRUE.}
+
+\item{plot.filename}{filename of the barplot}
 
 \item{type}{of enrichment to caculate: relation to island ("island") or
 UCSC RefGene Group mapped to the probe ("gene")}

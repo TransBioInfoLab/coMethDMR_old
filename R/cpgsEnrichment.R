@@ -10,12 +10,14 @@
 #  d = probes in backgound not within the cateogory (i.e. not island [opensea, shelf, shore])
 #' @param fg.probes foreground probes (i.e. hypo methylated pobes)
 #' @param bg.probes backgound probes (i.e. all comethylated probes)
-#' @param plot create a bar plot of frequncy for foreground and background ? Default TRUE.
+#' @param save.plot create a bar plot of frequncy for foreground and background ? Default TRUE.
 #' @param plot.filename filename of the barplot
 #' @param fg.label Foreground label
 #' @param bg.label Background label
 #' @param type of enrichment to caculate: relation to island ("island") or
 #' UCSC RefGene Group mapped to the probe ("gene")
+#' @param arrayType Type of array, 450k or EPIC
+#' @param tab.filename Table file name (csv file). Default no file will be output.
 #' @importFrom ggplot2 ggsave position_dodge theme element_blank scale_fill_manual
 #' @importFrom purrr reduce
 #' @importFrom readr write_csv
