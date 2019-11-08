@@ -51,7 +51,10 @@ MarkComethylatedCpGs <- function (betaCluster_mat,
 
 
   ### Check that betaToM == "TRUE" only if betaCluster_mat has beta values ###
-
+  if(all(is.na(betaCluster_mat))) {
+    message("Only probes with NA:", paste(colnames(betaCluster_mat),collapse = ","))
+    return(NULL)
+  }
   if((min(betaCluster_mat,na.rm = TRUE) < 0 | max(betaCluster_mat > 1,na.rm = TRUE)) & betaToM == "TRUE") {
     message("The input methylation values are not beta values,
          if they are M values, 'betaToM' should be FALSE")

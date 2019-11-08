@@ -94,6 +94,9 @@ CoMethSingleRegion <- function(CpGs_char,
       betaToM = betaToM,
       rDropThresh_num = rDropThresh_num
     )
+    # If MarkComethylatedCpGs was not able to execute
+    # (either only NAs or not beta values, function cannot be continued)
+    if(is.null(keepCpGs_df)) return(NULL)
 
     ### Find contiguous comethylated regions ###
     keepContiguousCpGs_df <- FindComethylatedRegions(
