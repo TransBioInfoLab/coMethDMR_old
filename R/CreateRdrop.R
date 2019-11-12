@@ -38,7 +38,7 @@ CreateRdrop <- function(data, method = c("pearson", "spearman")){
     data_no_i_mean <- rowMeans(data_no_i)
 
     ## Correlate dat_i and dat_no_i_mean
-    cor(data_i, data_no_i_mean, method = method)
+    cor(data_i, data_no_i_mean, method = method,use = "complete.obs")
   })
 
 
