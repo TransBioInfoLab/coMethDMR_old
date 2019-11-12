@@ -52,7 +52,7 @@ minPairwiseCor <- function (betaCluster_mat,
   ### Calculate minPairwiseCor for each CpGsSubregion
   minPairwiseCorlist <- lapply(probes.list, function(probes){
     betaCluster_mat[,probes] %>%
-      cor(method = method, use = "complete.obs") %>%
+      cor(method = method, use = "pairwise.complete.obs") %>%
       min(na.rm = TRUE)
   })
 
