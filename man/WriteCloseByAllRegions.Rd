@@ -4,8 +4,14 @@
 \alias{WriteCloseByAllRegions}
 \title{Extract clusters of CpG probes located closely}
 \usage{
-WriteCloseByAllRegions(fileName, regions, arrayType = c("450k", "EPIC"),
-  maxGap = 200, minCpGs = 3, ...)
+WriteCloseByAllRegions(
+  fileName,
+  regions,
+  arrayType = c("450k", "EPIC"),
+  maxGap = 200,
+  minCpGs = 3,
+  ...
+)
 }
 \arguments{
 \item{fileName}{Name of the RDS file where the output genomic regions will be saved.}

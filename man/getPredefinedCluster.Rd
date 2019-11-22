@@ -4,10 +4,16 @@
 \alias{getPredefinedCluster}
 \title{Get pre-annotated clusters of probes}
 \usage{
-getPredefinedCluster(arrayType = c("450k", "EPIC"))
+getPredefinedCluster(
+  arrayType = c("450k", "EPIC"),
+  clusterType = c("regions", "gene")
+)
 }
 \arguments{
 \item{arrayType}{Type of array, 450k or EPIC}
+
+\item{clusterType}{Type of cluster of probes: "gene" Cpgs or "regions" Cpgs
+clusters.}
 }
 \value{
 list of clustered probes

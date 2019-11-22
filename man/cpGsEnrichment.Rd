@@ -4,10 +4,17 @@
 \alias{cpGsEnrichment}
 \title{Calculate probes enrichment}
 \usage{
-cpGsEnrichment(fg.probes, bg.probes, fg.label = "foreground",
-  bg.label = "background", tab.filename, arrayType = c("450k", "EPIC"),
-  save.plot = TRUE, plot.filename = "barplot.pdf",
-  enrichment.type = c("island", "gene"))
+cpGsEnrichment(
+  fg.probes,
+  bg.probes,
+  fg.label = "foreground",
+  bg.label = "background",
+  tab.filename,
+  arrayType = c("450k", "EPIC"),
+  save.plot = TRUE,
+  plot.filename = "barplot.pdf",
+  enrichment.type = c("island", "gene")
+)
 }
 \arguments{
 \item{fg.probes}{foreground probes (i.e. hypo methylated pobes)}

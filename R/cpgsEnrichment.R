@@ -179,3 +179,103 @@ cpGsEnrichment <- function (fg.probes,
                 "m.list" = m.list))
 }
 
+#' @title Plot percentage of CpGs for diff. genomic features
+#' @description creates barplot for percentage of dff. methylated CpGs
+#' for enhancer, intergenic, intron, island, and other.
+#' @param probes list of named probes
+#' @param save.plot create a bar plot of frequncy ? Default TRUE.
+#' @param plot.filename filename of the barplot
+#' @param arrayType Type of array, 450k or EPIC
+#' @importFrom ggplot2 ggsave position_dodge theme element_blank scale_fill_manual
+#' @importFrom purrr reduce
+#' @importFrom readr write_csv
+#' @importFrom ggpubr ggbarplot
+#' @importFrom reshape2 melt
+#' @importFrom dplyr full_join %>%
+#' @return A list with a ggplot2 barplo, a table and the list of contigency tables
+#' @examples
+#' data(betasChr22_df)
+#' probes.list <- list("Hypomethylated CpGs" = rownames(betasChr22_df)[1:100],
+#'                     "Hypermethylated CpgS" = rownames(betasChr22_df)[100:200])
+#' result.list <- cpGsGenomicFeatures(probes.list = probes.list,
+#'                                arrayType = "450k",
+#'                                     bar.colors = c("#1F77B4", "#FF7F0D"),
+#'                                    save.plot = FALSE)
+cpGsGenomicFeatures <- function (probes.list,
+                                 arrayType = c("450k","EPIC"),
+                                 save.plot = TRUE,
+                                 bar.colors,
+                                 plot.filename = "barplot.pdf"
+){
+    arrayType <- match.arg(arrayType)
+
+    if (missing(probes.list)) stop("Please, set fg.probes")
+
+
+    if (arrayType == "450k") {
+        annot <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Islands.UCSC
+    } else {
+        annot <- IlluminaHumanMethylationEPICanno.ilm10b2.hg19::Islands.UCSC
+    }
+    annot$Relation_to_Island <-  gsub("N_|S_","",annot$Relation_to_Island)
+
+    if (arrayType == "450k") {
+        annot.other <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Other
+    } else {
+        annot.other <- IlluminaHumanMethylationEPICanno.ilm10b2.hg19::Other
+    }
+
+    annot.other$UCSC_RefGene_Group_hierarchy <- annot.other$UCSC_RefGene_Group
+    annot.other$UCSC_RefGene_Group_hierarchy[grep("TSS200",annot.other$UCSC_RefGene_Group_hierarchy)] <- "TSS200"
+    annot.other$UCSC_RefGene_Group_hierarchy[grep("TSS1500",annot.other$UCSC_RefGene_Group_hierarchy)] <- "TSS1500"
+    annot.other$UCSC_RefGene_Group_hierarchy[grep("5'UTR",annot.other$UCSC_RefGene_Group_hierarchy)] <- "5'UTR"
+    annot.other$UCSC_RefGene_Group_hierarchy[grep("1stExon",annot.other$UCSC_RefGene_Group_hierarchy)] <- "1stExon"
+    annot.other$UCSC_RefGene_Group_hierarchy[grep("Body",annot.other$UCSC_RefGene_Group_hierarchy)] <- "Body"
+    annot.other$UCSC_RefGene_Group_hierarchy[grep("3'UTR",annot.other$UCSC_RefGene_Group_hierarchy)] <- "3'UTR"
+    annot.other$UCSC_RefGene_Group_hierarchy[annot.other$UCSC_RefGene_Group_hierarchy == ""] <- "Intergenic"
+    annot.other$UCSC_RefGene_Group_hierarchy[is.na(annot.other$UCSC_RefGene_Group_hierarchy)] <- "Intergenic"
+
+
+    cts.annot <- plyr::ldply(probes.list, function(x){
+        cts <- annot.other[x, "UCSC_RefGene_Group_hierarchy"]
+        cts <- plyr::count(cts);
+        cts2 <- annot[x, "Relation_to_Island"]
+        cts2 <- plyr::count(cts2);
+        cts <- rbind(cts,cts2,
+                     data.frame("x" = "Enhancer",
+                                freq = sum(x %in% enhancer.probes)
+                     )
+        )
+        cts$counts <- cts$freq
+        cts$freq <- (100 * cts$freq)/length(x)
+        return(cts)
+    })
+
+    if(missing(bar.colors)) {
+        bar.colors <- cbPalette <- c("#999999", "#E69F00",
+                                     "#56B4E9", "#009E73",
+                                     "#F0E442", "#0072B2",
+                                     "#D55E00", "#CC79A7")
+    }
+
+    plot <- ggpubr::ggbarplot(cts.annot,
+                              y = "freq",
+                              x = "x",
+                              fill = ".id",
+                              color = ".id",
+                              palette = bar.colors,
+                              ylab = "Percentage CpGs",
+                              xlab = "Genomic Feature",
+                              position = position_dodge(0.8)) +
+        theme(legend.title = element_blank(),
+              axis.text.x = element_text(angle = 90, hjust = 1))
+
+    if(save.plot){
+        ggsave(plot.filename, plot = plot)
+    }
+
+    return(list("table" =  cts.annot,
+                "plot" = plot))
+}
+
+

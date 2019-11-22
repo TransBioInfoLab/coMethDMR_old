@@ -4,8 +4,13 @@
 \alias{minPairwiseCor}
 \title{Calculate min Pairwise correlation for subregions probes}
 \usage{
-minPairwiseCor(betaCluster_mat, betaToM = TRUE, minPairwiseCorr = 0.2,
-  probes.list, method = c("pearson", "spearman"))
+minPairwiseCor(
+  betaCluster_mat,
+  betaToM = TRUE,
+  minPairwiseCorr = 0.2,
+  probes.list,
+  method = c("pearson", "spearman")
+)
 }
 \arguments{
 \item{betaCluster_mat}{matrix of beta values, with rownames = sample ids,

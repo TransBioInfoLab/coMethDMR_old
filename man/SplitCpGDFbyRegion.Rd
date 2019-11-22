@@ -4,8 +4,11 @@
 \alias{SplitCpGDFbyRegion}
 \title{Split CpG dataframe by Subregion}
 \usage{
-SplitCpGDFbyRegion(CpGsSubregions_df, arrayType = c("450k", "EPIC"),
-  returnAllCpGs = TRUE)
+SplitCpGDFbyRegion(
+  CpGsSubregions_df,
+  arrayType = c("450k", "EPIC"),
+  returnAllCpGs = TRUE
+)
 }
 \arguments{
 \item{CpGsSubregions_df}{data frame with CpG and subregion number}

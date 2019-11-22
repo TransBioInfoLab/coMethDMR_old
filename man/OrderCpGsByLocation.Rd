@@ -4,8 +4,11 @@
 \alias{OrderCpGsByLocation}
 \title{Order CpGs by genomic location}
 \usage{
-OrderCpGsByLocation(CpGs_char, arrayType = c("450k", "EPIC"),
-  output = c("vector", "dataframe"))
+OrderCpGsByLocation(
+  CpGs_char,
+  arrayType = c("450k", "EPIC"),
+  output = c("vector", "dataframe")
+)
 }
 \arguments{
 \item{CpGs_char}{vector of CpGs}
