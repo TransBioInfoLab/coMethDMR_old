@@ -13,7 +13,8 @@ cpGsEnrichment(
   arrayType = c("450k", "EPIC"),
   save.plot = TRUE,
   plot.filename = "barplot.pdf",
-  enrichment.type = c("island", "gene")
+  annotation.gr,
+  enrichment.type = c("island", "gene", "other")
 )
 }
 \arguments{

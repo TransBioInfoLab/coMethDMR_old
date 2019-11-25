@@ -32,6 +32,16 @@
 #'                               enrichment.type = "island",
 #'                               arrayType = "450k",
 #'                               save.plot = FALSE)
+#'
+#' ChmmModels <- readr::read_tsv("https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/E073_15_coreMarks_segments.bed",col_names = FALSE)
+#' colnames(ChmmModels) <- c("chr","start","end","state")
+#' ChmmModels.gr <- makeGRangesFromDataFrame(ChmmModels,keep.extra.columns = TRUE)
+#' result.list <- cpGsEnrichment(fg.probes = rownames(betasChr22_df)[1:100],
+#'                               bg.probes = rownames(betasChr22_df)[-c(1:100)],
+#'                               enrichment.type = "other",
+#'                               annotation.gr = ChmmModels.gr,
+#'                               arrayType = "450k",
+#'                               save.plot = FALSE)
 cpGsEnrichment <- function (fg.probes,
                             bg.probes,
                             fg.label = "foreground",
@@ -40,7 +50,8 @@ cpGsEnrichment <- function (fg.probes,
                             arrayType = c("450k","EPIC"),
                             save.plot = TRUE,
                             plot.filename = "barplot.pdf",
-                            enrichment.type =  c("island","gene")
+                            annotation.gr,
+                            enrichment.type =  c("island","gene","other")
 ){
 
     arrayType <- match.arg(arrayType)
@@ -50,7 +61,6 @@ cpGsEnrichment <- function (fg.probes,
     if (missing(bg.probes)) stop("Please, set bg.probes")
 
     # be sure there is no overlap
-    fg.probes <- setdiff(fg.probes, bg.probes)
     bg.probes <- setdiff(bg.probes, fg.probes)
 
     if (enrichment.type == "island") {
@@ -83,8 +93,15 @@ cpGsEnrichment <- function (fg.probes,
         annot$UCSC_RefGene_Group_hierarchy[grep("3'UTR",annot$UCSC_RefGene_Group_hierarchy)] <- "3'UTR"
         annot$UCSC_RefGene_Group_hierarchy[annot$UCSC_RefGene_Group_hierarchy == ""] <- "Intergenic"
         annot$UCSC_RefGene_Group_hierarchy[is.na(annot$UCSC_RefGene_Group_hierarchy)] <- "Intergenic"
+    }  else if (enrichment.type == "other") {
+        probes.gr <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Locations %>%
+            makeGRangesFromDataFrame(start.field = "pos",end.field = "pos")
+        hits <- findOverlaps(probes.gr,annotation.gr,select = "first")
+        col.name <- names(values(annotation.gr))[1]
+        annot <- data.frame(row.names = names(probes.gr),
+                            values(annotation.gr)[,1][hits],stringsAsFactors = FALSE)
+        colnames(annot) <- col.name
     }
-
 
 
     fg.cts <- annot[unique(fg.probes),col.name]
@@ -97,8 +114,8 @@ cpGsEnrichment <- function (fg.probes,
 
     cts <- purrr::reduce(.x = list(fg.cts, bg.cts), .f = (full_join))
     cts.freq <- cts
-    cts.freq[,2] <- 100 * cts.freq[,2] / sum(cts.freq[,2])
-    cts.freq[,3] <- 100 * cts.freq[,3] / sum(cts.freq[,3])
+    cts.freq[,2] <- 100 * cts.freq[,2] / sum(cts.freq[,2],na.rm = TRUE)
+    cts.freq[,3] <- 100 * cts.freq[,3] / sum(cts.freq[,3],na.rm = TRUE)
 
     m.list <- plyr::alply(.data = 1:nrow(cts),
                           .margins = 1,
@@ -121,8 +138,11 @@ cpGsEnrichment <- function (fg.probes,
 
     ret <- plyr::ldply(.data = m.list,
                        .fun = function(m){
-                           ft <- fisher.test(m,alternative = 'greater')
-
+                           if(any(is.na(m))) {
+                               ft <- data.frame(p.value = NA, estimate = NA)
+                           } else {
+                               ft <- fisher.test(m,alternative = 'greater')
+                           }
                            df <- data.frame(
                                "p_value" = ft$p.value,
                                "odds_ratio" = ft$estimate,
@@ -146,9 +166,10 @@ cpGsEnrichment <- function (fg.probes,
                               fill = "variable",
                               color = "white",
                               ylab = "Frequency (% Counts)",
-                              xlab = ifelse(col.name == "Relation_to_Island", "Relation to island", "UCSC RefGene Group"),
+                              xlab = gsub("[^[:alnum:] ]"," ",col.name),
                               position = position_dodge(0.8)) +
-        theme(legend.title = element_blank()) +
+        theme(legend.title = element_blank(),
+              axis.text.x = element_text(angle = 90, hjust = 1)) +
         scale_fill_manual(name = "",
                           labels = c(bg.label,
                                      fg.label),
@@ -186,7 +207,7 @@ cpGsEnrichment <- function (fg.probes,
 #' @param save.plot create a bar plot of frequncy ? Default TRUE.
 #' @param plot.filename filename of the barplot
 #' @param arrayType Type of array, 450k or EPIC
-#' @importFrom ggplot2 ggsave position_dodge theme element_blank scale_fill_manual
+#' @importFrom ggplot2 ggsave position_dodge theme element_blank scale_fill_manual element_text
 #' @importFrom purrr reduce
 #' @importFrom readr write_csv
 #' @importFrom ggpubr ggbarplot
@@ -236,6 +257,9 @@ cpGsGenomicFeatures <- function (probes.list,
     annot.other$UCSC_RefGene_Group_hierarchy[is.na(annot.other$UCSC_RefGene_Group_hierarchy)] <- "Intergenic"
 
 
+    if(!is(probes.list,"list")) {
+        probes.list <- list("Probes" = probes.list)
+    }
     cts.annot <- plyr::ldply(probes.list, function(x){
         cts <- annot.other[x, "UCSC_RefGene_Group_hierarchy"]
         cts <- plyr::count(cts);
