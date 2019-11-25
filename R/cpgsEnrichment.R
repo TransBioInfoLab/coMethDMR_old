@@ -95,7 +95,7 @@ cpGsEnrichment <- function (fg.probes,
         annot$UCSC_RefGene_Group_hierarchy[grep("3'UTR",annot$UCSC_RefGene_Group_hierarchy)] <- "3'UTR"
         annot$UCSC_RefGene_Group_hierarchy[annot$UCSC_RefGene_Group_hierarchy == ""] <- "Intergenic"
         annot$UCSC_RefGene_Group_hierarchy[is.na(annot$UCSC_RefGene_Group_hierarchy)] <- "Intergenic"
-    }  else if (enrichment.type == "other") {
+    }  else if (enrichment.type == "costum") {
         probes.gr <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Locations %>%
             makeGRangesFromDataFrame(start.field = "pos",end.field = "pos")
         hits <- findOverlaps(probes.gr,annotation.gr,select = "first")
