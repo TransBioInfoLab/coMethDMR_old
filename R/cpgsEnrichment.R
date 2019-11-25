@@ -15,7 +15,9 @@
 #' @param fg.label Foreground label
 #' @param bg.label Background label
 #' @param type of enrichment to caculate: relation to island ("island") or
-#' UCSC RefGene Group mapped to the probe ("gene")
+#' UCSC RefGene Group mapped to the probe ("gene"), costumized annotation ("costum")
+#' @param annotation.gr Annotation Granges used only if type is set to "custom",
+#' first column of the metadata is used to annotate the probes
 #' @param arrayType Type of array, 450k or EPIC
 #' @param tab.filename Table file name (csv file). Default no file will be output.
 #' @importFrom ggplot2 ggsave position_dodge theme element_blank scale_fill_manual
@@ -38,7 +40,7 @@
 #' ChmmModels.gr <- makeGRangesFromDataFrame(ChmmModels,keep.extra.columns = TRUE)
 #' result.list <- cpGsEnrichment(fg.probes = rownames(betasChr22_df)[1:100],
 #'                               bg.probes = rownames(betasChr22_df)[-c(1:100)],
-#'                               enrichment.type = "other",
+#'                               enrichment.type = "costum",
 #'                               annotation.gr = ChmmModels.gr,
 #'                               arrayType = "450k",
 #'                               save.plot = FALSE)
@@ -51,7 +53,7 @@ cpGsEnrichment <- function (fg.probes,
                             save.plot = TRUE,
                             plot.filename = "barplot.pdf",
                             annotation.gr,
-                            enrichment.type =  c("island","gene","other")
+                            enrichment.type =  c("island","gene","costum")
 ){
 
     arrayType <- match.arg(arrayType)

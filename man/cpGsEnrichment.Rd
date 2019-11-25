@@ -14,7 +14,7 @@ cpGsEnrichment(
   save.plot = TRUE,
   plot.filename = "barplot.pdf",
   annotation.gr,
-  enrichment.type = c("island", "gene", "other")
+  enrichment.type = c("island", "gene", "costum")
 )
 }
 \arguments{
@@ -34,8 +34,11 @@ cpGsEnrichment(
 
 \item{plot.filename}{filename of the barplot}
 
+\item{annotation.gr}{Annotation Granges used only if type is set to "custom",
+first column of the metadata is used to annotate the probes}
+
 \item{type}{of enrichment to caculate: relation to island ("island") or
-UCSC RefGene Group mapped to the probe ("gene")}
+UCSC RefGene Group mapped to the probe ("gene"), costumized annotation ("costum")}
 }
 \value{
 A list with a ggplot2 barplo, a table and the list of contigency tables
@@ -48,6 +51,16 @@ data(betasChr22_df)
 result.list <- cpGsEnrichment(fg.probes = rownames(betasChr22_df)[1:100],
                               bg.probes = rownames(betasChr22_df)[-c(1:100)],
                               enrichment.type = "island",
+                              arrayType = "450k",
+                              save.plot = FALSE)
+
+ChmmModels <- readr::read_tsv("https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/E073_15_coreMarks_segments.bed",col_names = FALSE)
+colnames(ChmmModels) <- c("chr","start","end","state")
+ChmmModels.gr <- makeGRangesFromDataFrame(ChmmModels,keep.extra.columns = TRUE)
+result.list <- cpGsEnrichment(fg.probes = rownames(betasChr22_df)[1:100],
+                              bg.probes = rownames(betasChr22_df)[-c(1:100)],
+                              enrichment.type = "costum",
+                              annotation.gr = ChmmModels.gr,
                               arrayType = "450k",
                               save.plot = FALSE)
 }
