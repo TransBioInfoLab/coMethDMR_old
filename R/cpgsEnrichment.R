@@ -27,6 +27,7 @@
 #' @importFrom reshape2 melt
 #' @importFrom dplyr full_join %>%
 #' @return A list with a ggplot2 barplo, a table and the list of contigency tables
+#' @export
 #' @examples
 #' data(betasChr22_df)
 #' result.list <- cpGsEnrichment(fg.probes = rownames(betasChr22_df)[1:100],
@@ -216,6 +217,7 @@ cpGsEnrichment <- function (fg.probes,
 #' @importFrom reshape2 melt
 #' @importFrom dplyr full_join %>%
 #' @return A list with a ggplot2 barplo, a table and the list of contigency tables
+#' @export
 #' @examples
 #' data(betasChr22_df)
 #' probes.list <- list("Hypomethylated CpGs" = rownames(betasChr22_df)[1:100],
