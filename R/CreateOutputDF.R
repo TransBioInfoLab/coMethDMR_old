@@ -59,7 +59,6 @@ CreateOutputDF <- function(keepCpGs_df,
         )
         output_df <- merge(CpGsOrdered_df, output_df, by.x = "cpg", by.y = "CpG")
 
-        print(output_df)
         if (!is.null(keepminPairwiseCor_df)) {
             output_df <- left_join(output_df, keepminPairwiseCor_df, by = "Subregion")
         }
