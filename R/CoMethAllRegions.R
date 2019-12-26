@@ -89,65 +89,87 @@ CoMethAllRegions <- function(dnam,
                              CpGs_ls,
                              file = NULL,
                              returnAllCpGs = FALSE,
-                             output = c("CpGs", "dataframe"),
+                             output = c("CpGs", "dataframe","all"),
                              nCores_int = 1L,
                              ...){
-  # browser()
+    # browser()
 
-  method <- match.arg(method)
-  arrayType <- match.arg(arrayType)
-  output <- match.arg(output)
+    method <- match.arg(method)
+    arrayType <- match.arg(arrayType)
+    output <- match.arg(output)
 
-  ### Read file of close by CpGs ###
-  if(!is.null(CpGs_ls)) {
+    ### Read file of close by CpGs ###
+    if(!is.null(CpGs_ls)) {
 
-    closeByGenomicRegion_ls <- CpGs_ls
+        closeByGenomicRegion_ls <- CpGs_ls
 
-  } else {
+    } else {
 
-    closeByGenomicRegion_ls <- readRDS(file)
+        closeByGenomicRegion_ls <- readRDS(file)
 
-  }
+    }
 
-  cluster <- CreateParallelWorkers(nCores_int, ...)
+    cluster <- CreateParallelWorkers(nCores_int, ...)
 
-  coMethCpGsAllREgions_ls <- bplapply(
-    unname(closeByGenomicRegion_ls),
-    FUN = CoMethSingleRegion,
-    BPPARAM = cluster,
-    dnam = dnam,
-    betaToM = betaToM,
-    minPairwiseCorr = minPairwiseCorr,
-    rDropThresh_num = rDropThresh_num,
-    minCpGs = minCpGs,
-    method = method,
-    arrayType = arrayType,
-    returnAllCpGs = returnAllCpGs
-  )
-
-  coMethCpGsAllREgions_ls <- unique(coMethCpGsAllREgions_ls)
-
-
-  ### return output ###
-  # Return list of contiguous comethylated CpGs by Regions
-  if(output == "CpGs"){
-
-
-    unlist(
-      lapply(coMethCpGsAllREgions_ls, `[[`, 2),
-      recursive = FALSE
+    coMethCpGsAllREgions_ls <- bplapply(
+        unname(closeByGenomicRegion_ls),
+        FUN = CoMethSingleRegion,
+        BPPARAM = cluster,
+        dnam = dnam,
+        betaToM = betaToM,
+        minPairwiseCorr = minPairwiseCorr,
+        rDropThresh_num = rDropThresh_num,
+        minCpGs = minCpGs,
+        method = method,
+        arrayType = arrayType,
+        returnAllCpGs = returnAllCpGs
     )
 
+    coMethCpGsAllREgions_ls <- unique(coMethCpGsAllREgions_ls)
 
-  } else {
 
-    out_ContigRegions <- lapply(coMethCpGsAllREgions_ls, `[[`, 1)
-    out_ContigRegions[sapply(out_ContigRegions, is.null)] <- NULL
-    names(out_ContigRegions) <- unlist(lapply(out_ContigRegions, `[[`, 1, 1))
+    ### return output ###
+    # Return list of contiguous comethylated CpGs by Regions
+    if(output == "CpGs"){
 
-    out_ContigRegions
 
-  }
+        unlist(
+            lapply(coMethCpGsAllREgions_ls, `[[`, 2),
+            recursive = FALSE
+        )
+
+    } else if (output == "all"){ #Lanyu
+
+        coMeth_ls <- unlist(
+            lapply(coMethCpGsAllREgions_ls, `[[`, 2),
+            recursive = FALSE
+        )
+
+        inputRegion_chr <- unlist(
+            lapply(coMethCpGsAllREgions_ls, `[[`, 3),
+            recursive = FALSE
+        )
+
+        nCoMethRegions_num <- unlist(
+            lapply(coMethCpGsAllREgions_ls, `[[`, 4),
+            recursive = FALSE
+        )
+
+        list(
+            inputRegion_chr = inputRegion_chr,
+            nCoMethRegions_num = nCoMethRegions_num,
+            coMeth_ls = coMeth_ls
+
+        )
+    } else {
+
+        out_ContigRegions <- lapply(coMethCpGsAllREgions_ls, `[[`, 1)
+        out_ContigRegions[sapply(out_ContigRegions, is.null)] <- NULL
+        names(out_ContigRegions) <- unlist(lapply(out_ContigRegions, `[[`, 1, 1))
+
+        out_ContigRegions
+
+    }
 
 
 }
