@@ -74,6 +74,6 @@ minPairwiseCor <- function (betaCluster_mat,
   } else {
     probes.list <- probes.list[keepminPairwiseCor]
   }
-  return(list("keepminPairwiseCor.df" = df,
+  return(list("keepminPairwiseCor_df" = df,
               "probes.list.filtered" = probes.list))
 }

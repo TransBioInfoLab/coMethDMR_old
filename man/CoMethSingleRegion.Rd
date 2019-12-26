@@ -10,7 +10,7 @@ CoMethSingleRegion(
   dnam,
   betaToM = TRUE,
   rDropThresh_num = 0.4,
-  minPairwiseCorr = 0.2,
+  minPairwiseCorr = NULL,
   method = c("pearson", "spearman"),
   minCpGs = 3,
   arrayType = c("450k", "EPIC"),

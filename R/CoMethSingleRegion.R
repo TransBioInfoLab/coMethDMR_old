@@ -10,6 +10,9 @@
 #' @param rDropThresh_num thershold for min correlation between a cpg with sum
 #'    of the rest of the CpGs
 #'
+#' @param minPairwiseCorr Calculate minimun Pairs wise correlation and use as a filter ?
+#' Default: NULL. To use this filter set a number between 0 and 1.
+#'
 #' @param minCpGs mininum number of CpGs to be considered a "region".
 #'    Only regions with more than \code{minCpGs} will be returned.
 #' @param arrayType Type of array, can be "450k" or "EPIC"
@@ -62,88 +65,94 @@ CoMethSingleRegion <- function(CpGs_char,
                                dnam,
                                betaToM = TRUE,
                                rDropThresh_num = 0.4,
-                               minPairwiseCorr = 0.2,
+                               minPairwiseCorr = NULL,
                                method = c("pearson", "spearman"),
                                minCpGs = 3,
                                arrayType = c("450k","EPIC"),
                                returnAllCpGs = FALSE){
 
-  arrayType <- match.arg(arrayType)
-  method <- match.arg(method)
+    arrayType <- match.arg(arrayType)
+    method <- match.arg(method)
 
-  ### Order CpGs by genomic location ###
-  CpGsOrdered_df <- OrderCpGsByLocation(
-    CpGs_char, arrayType, output = "dataframe"
-  )
-
-  ### Extract beta matrix for the input CpGs ###
-  # take common cpgs in beta matrix and the region first
-  commonCpGs_char <- intersect (CpGsOrdered_df$cpg, row.names(dnam))
-
-  if (length(commonCpGs_char) >= minCpGs){
-
-    betaCluster_mat <- dnam[commonCpGs_char, ]
-
-    ### Transpose beta matrix ###
-    betaClusterTransp_mat <- t(betaCluster_mat)
-
-    ### Mark comethylated CpGs ###
-    keepCpGs_df <- MarkComethylatedCpGs(
-      betaCluster_mat = betaClusterTransp_mat,
-      method = method,
-      betaToM = betaToM,
-      rDropThresh_num = rDropThresh_num
-    )
-    # If MarkComethylatedCpGs was not able to execute
-    # (either only NAs or not beta values, function cannot be continued)
-    if(is.null(keepCpGs_df)) return(NULL)
-
-    ### Find contiguous comethylated regions ###
-    keepContiguousCpGs_df <- FindComethylatedRegions(
-      CpGs_df = keepCpGs_df
+    ### Order CpGs by genomic location ###
+    CpGsOrdered_df <- OrderCpGsByLocation(
+        CpGs_char, arrayType, output = "dataframe"
     )
 
-    ### Split CpG dataframe by Subregion ###
-    keepContiguousCpGs_ls <- SplitCpGDFbyRegion(
-      keepContiguousCpGs_df, arrayType, returnAllCpGs
-    )
+    ### Extract beta matrix for the input CpGs ###
+    # take common cpgs in beta matrix and the region first
+    commonCpGs_char <- intersect (CpGsOrdered_df$cpg, row.names(dnam))
+
+    if (length(commonCpGs_char) >= minCpGs){
+
+        betaCluster_mat <- dnam[commonCpGs_char, ]
+
+        ### Transpose beta matrix ###
+        betaClusterTransp_mat <- t(betaCluster_mat)
+
+        ### Mark comethylated CpGs ###
+        keepCpGs_df <- MarkComethylatedCpGs(
+            betaCluster_mat = betaClusterTransp_mat,
+            method = method,
+            betaToM = betaToM,
+            rDropThresh_num = rDropThresh_num
+        )
+        # If MarkComethylatedCpGs was not able to execute
+        # (either only NAs or not beta values, function cannot be continued)
+        if(is.null(keepCpGs_df)) return(NULL)
+
+        ### Find contiguous comethylated regions ###
+        keepContiguousCpGs_df <- FindComethylatedRegions(
+            CpGs_df = keepCpGs_df
+        )
+
+        ### Split CpG dataframe by Subregion ###
+        keepContiguousCpGs_ls <- SplitCpGDFbyRegion(
+            keepContiguousCpGs_df, arrayType, returnAllCpGs
+        )
 
 
-    ### calculate minPairwiseCor and subset for each subregion
-    ### and add information to df
-    pairwiseResults <- minPairwiseCor(
-      betaCluster_mat = betaClusterTransp_mat,
-      method = method,
-      betaToM = betaToM,
-      minPairwiseCorr = minPairwiseCorr,
-      probes.list = keepContiguousCpGs_ls
-    )
-    keepminPairwiseCor.df <- pairwiseResults$keepminPairwiseCor.df
+        ### calculate minPairwiseCor and subset for each subregion
+        ### and add information to df
 
-    # if returnAllCpGs no filtering
-    if(!returnAllCpGs){
-      keepContiguousCpGs_ls <- pairwiseResults$probes.list.filtered
+        if(!is.null(minPairwiseCorr)){
+            pairwiseResults <- minPairwiseCor(
+                betaCluster_mat = betaClusterTransp_mat,
+                method = method,
+                betaToM = betaToM,
+                minPairwiseCorr = minPairwiseCorr,
+                probes.list = keepContiguousCpGs_ls
+            )
+            keepminPairwiseCor_df <- pairwiseResults$keepminPairwiseCor_df
+
+            # if returnAllCpGs no filtering
+            if(!returnAllCpGs){
+                keepContiguousCpGs_ls <- pairwiseResults$probes.list.filtered
+            }
+        } else {
+            keepminPairwiseCor_df <- NULL
+        }
+
+        ### Create Output Data Frame  ###
+        coMethCpGs_df <- CreateOutputDF(
+            keepCpGs_df = keepCpGs_df,
+            keepContiguousCpGs_df = keepContiguousCpGs_df,
+            CpGsOrdered_df =  CpGsOrdered_df,
+            returnAllCpGs =  returnAllCpGs,
+            keepminPairwiseCor_df = keepminPairwiseCor_df
+        )
+
+        ### Create output list of data frame and CpGs by subregion ###
+        coMethCpGs_ls <- list(
+            contiguousRegions = coMethCpGs_df,
+            CpGsSubregions = keepContiguousCpGs_ls
+        )
+
+        coMethCpGs_ls
+
+    } else {
+        return(NULL)
     }
-    ### Create Output Data Frame  ###
-    coMethCpGs_df <- CreateOutputDF(
-      keepCpGs_df = keepCpGs_df,
-      keepContiguousCpGs_df = keepContiguousCpGs_df,
-      CpGsOrdered_df =  CpGsOrdered_df,
-      returnAllCpGs =  returnAllCpGs,
-      keepminPairwiseCor.df = keepminPairwiseCor.df
-    )
-
-    ### Create output list of data frame and CpGs by subregion ###
-    coMethCpGs_ls <- list(
-      contiguousRegions = coMethCpGs_df,
-      CpGsSubregions = keepContiguousCpGs_ls
-    )
-
-    coMethCpGs_ls
-
-  } else {
-    return(NULL)
-  }
 
 
 

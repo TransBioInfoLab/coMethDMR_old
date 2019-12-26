@@ -7,7 +7,7 @@
 #'    Subregion = cotiguous comethylated subregion number
 #' @param CpGsOrdered_df a data frame of CpG location with
 #'    chr = chromosome number, pos = genomic position, cpg = CpG name
-#' @param keepminPairwiseCor.df a data frame with
+#' @param keepminPairwiseCor_df a data frame with
 #'    Subregion = cotiguous comethylated subregion number
 #' @param returnAllCpGs indicates if outputting all the CpGs in the region
 #'    when there is not a contiguous comethylated region or
@@ -37,50 +37,56 @@
 #'    keepCpGs_df <- MarkComethylatedCpGs(betaCluster_mat = betaClusterTransp_mat)
 #'    keepContiguousCpGs_df <- FindComethylatedRegions(CpGs_df = keepCpGs_df)
 #'    pairwiseCor <- minPairwiseCor(betaClusterTransp_mat,probes.list = list(CpGsChr22_char))
-#'    keepminPairwiseCor.df <- pairwiseCor$keepminPairwiseCor.df
-#'    CreateOutputDF(keepCpGs_df, keepContiguousCpGs_df, CpGsOrdered_df,keepminPairwiseCor.df)
+#'    keepminPairwiseCor_df <- pairwiseCor$keepminPairwiseCor.df
+#'    CreateOutputDF(keepCpGs_df, keepContiguousCpGs_df, CpGsOrdered_df,keepminPairwiseCor_df)
+#'    CreateOutputDF(keepCpGs_df, keepContiguousCpGs_df, CpGsOrdered_df,NULL)
 CreateOutputDF <- function(keepCpGs_df,
                            keepContiguousCpGs_df,
                            CpGsOrdered_df,
-                           keepminPairwiseCor.df,
+                           keepminPairwiseCor_df,
                            returnAllCpGs = FALSE){
 
-  if (returnAllCpGs == FALSE & all(keepContiguousCpGs_df$Subregion == 0)){
+    if (returnAllCpGs == FALSE & all(keepContiguousCpGs_df$Subregion == 0)){
+        NULL
+    } else {
 
-    NULL
+        output_df <- merge(
+            keepCpGs_df,
+            keepContiguousCpGs_df,
+            by.x = "CpG",
+            by.y = "ProbeID",
+            all.x = TRUE
+        )
+        output_df <- merge(CpGsOrdered_df, output_df, by.x = "cpg", by.y = "CpG")
 
-  } else {
+        print(output_df)
+        if (!is.null(keepminPairwiseCor_df)) {
+            output_df <- left_join(output_df, keepminPairwiseCor_df, by = "Subregion")
+        }
 
-    output_df <- merge(
-      keepCpGs_df, keepContiguousCpGs_df, by.x = "CpG", by.y = "ProbeID", all.x = TRUE
-    )
-    output2_df <- merge(
-      CpGsOrdered_df, output_df, by.x = "cpg", by.y = "CpG"
-    )
+        output_df <-
+            output_df[order(output_df$chr, output_df$pos),]
+        output_df [is.na(output_df)] <- 0
 
-    output3_df <- left_join(
-      output2_df, keepminPairwiseCor.df, by = "Subregion"
-    )
+        coMethCpGs_df <- data.frame(
+            Region = NameRegion(CpGsOrdered_df),
+            CpG = output_df$cpg,
+            Chr = output_df$chr,
+            MAPINFO = output_df$pos,
+            r_drop = output_df$r_drop,
+            keep = output_df$keep,
+            keep_contiguous = output_df$Subregion
+        )
 
-
-    output3_df <- output3_df[order(output3_df$chr, output3_df$pos), ]
-    output3_df [is.na(output3_df)] <- 0
-
-    coMethCpGs_df <- data.frame(
-      Region = NameRegion(CpGsOrdered_df),
-      CpG = output3_df$cpg,
-      Chr = output3_df$chr,
-      MAPINFO = output3_df$pos,
-      r_drop = output3_df$r_drop,
-      keep = output3_df$keep,
-      keep_contiguous = output3_df$Subregion,
-      regionMinPairwiseCor = output3_df$minPairwiseCor,
-      keep_regionMinPairwiseCor = output3_df$keepminPairwiseCor
-    )
-
-    coMethCpGs_df
-
-
-  }
-
+        if (!is.null(keepminPairwiseCor_df)) {
+            coMethCpGs_df <- cbind(
+                coMethCpGs_df,
+                data.frame(
+                    regionMinPairwiseCor = output_df$minPairwiseCor,
+                    keep_regionMinPairwiseCor = output_df$keepminPairwiseCor
+                )
+            )
+        }
+        coMethCpGs_df
+    }
 }

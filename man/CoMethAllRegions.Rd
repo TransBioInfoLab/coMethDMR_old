@@ -10,7 +10,7 @@ CoMethAllRegions(
   betaToM = FALSE,
   method = c("pearson", "spearman"),
   rDropThresh_num = 0.4,
-  minPairwiseCorr = 0.2,
+  minPairwiseCorr = NULL,
   minCpGs = 3,
   arrayType = c("450k", "EPIC"),
   CpGs_ls,

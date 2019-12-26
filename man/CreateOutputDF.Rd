@@ -8,7 +8,7 @@ CreateOutputDF(
   keepCpGs_df,
   keepContiguousCpGs_df,
   CpGsOrdered_df,
-  keepminPairwiseCor.df,
+  keepminPairwiseCor_df,
   returnAllCpGs = FALSE
 )
 }
@@ -23,7 +23,7 @@ Subregion = cotiguous comethylated subregion number}
 \item{CpGsOrdered_df}{a data frame of CpG location with
 chr = chromosome number, pos = genomic position, cpg = CpG name}
 
-\item{keepminPairwiseCor.df}{a data frame with
+\item{keepminPairwiseCor_df}{a data frame with
 Subregion = cotiguous comethylated subregion number}
 
 \item{returnAllCpGs}{indicates if outputting all the CpGs in the region
@@ -54,7 +54,8 @@ Create Output Dataframe
    keepCpGs_df <- MarkComethylatedCpGs(betaCluster_mat = betaClusterTransp_mat)
    keepContiguousCpGs_df <- FindComethylatedRegions(CpGs_df = keepCpGs_df)
    pairwiseCor <- minPairwiseCor(betaClusterTransp_mat,probes.list = list(CpGsChr22_char))
-   keepminPairwiseCor.df <- pairwiseCor$keepminPairwiseCor.df
-   CreateOutputDF(keepCpGs_df, keepContiguousCpGs_df, CpGsOrdered_df,keepminPairwiseCor.df)
+   keepminPairwiseCor_df <- pairwiseCor$keepminPairwiseCor.df
+   CreateOutputDF(keepCpGs_df, keepContiguousCpGs_df, CpGsOrdered_df,keepminPairwiseCor_df)
+   CreateOutputDF(keepCpGs_df, keepContiguousCpGs_df, CpGsOrdered_df,NULL)
 }
 \keyword{internal}
