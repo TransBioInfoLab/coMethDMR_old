@@ -142,10 +142,31 @@ CoMethSingleRegion <- function(CpGs_char,
             keepminPairwiseCor_df = keepminPairwiseCor_df
         )
 
+        ### Create input region & number of co-methylated regions (Lanyu) ###
+        if (returnAllCpGs == FALSE & all(keepContiguousCpGs_df$Subregion == 0)){
+            inputRegion = NULL
+            nCoMethRegions = NULL
+        } else {
+
+            input <- as.character(coMethCpGs_df$Region[1])
+            nCoMeth <- as.numeric(max(coMethCpGs_df$keep_contiguous))
+
+            if (nCoMeth >= 1){
+                inputRegion <- rep(input, times = nCoMeth)
+                nCoMethRegions <- rep(nCoMeth, times = nCoMeth)
+            } else {
+                inputRegion <- input
+                nCoMethRegions <- nCoMeth
+            }
+
+        }
+
         ### Create output list of data frame and CpGs by subregion ###
         coMethCpGs_ls <- list(
             contiguousRegions = coMethCpGs_df,
-            CpGsSubregions = keepContiguousCpGs_ls
+            CpGsSubregions = keepContiguousCpGs_ls,
+            inputRegion = inputRegion,
+            nCoMethRegions = nCoMethRegions
         )
 
         coMethCpGs_ls

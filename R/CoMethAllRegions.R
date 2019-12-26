@@ -89,7 +89,7 @@ CoMethAllRegions <- function(dnam,
                              CpGs_ls,
                              file = NULL,
                              returnAllCpGs = FALSE,
-                             output = c("CpGs", "dataframe"),
+                             output = c("CpGs", "dataframe","all"),
                              nCores_int = 1L,
                              ...){
     # browser()
@@ -138,6 +138,29 @@ CoMethAllRegions <- function(dnam,
             recursive = FALSE
         )
 
+    } else if (output == "all"){ #Lanyu
+
+        coMeth_ls <- unlist(
+            lapply(coMethCpGsAllREgions_ls, `[[`, 2),
+            recursive = FALSE
+        )
+
+        inputRegion_chr <- unlist(
+            lapply(coMethCpGsAllREgions_ls, `[[`, 3),
+            recursive = FALSE
+        )
+
+        nCoMethRegions_num <- unlist(
+            lapply(coMethCpGsAllREgions_ls, `[[`, 4),
+            recursive = FALSE
+        )
+
+        list(
+            inputRegion_chr = inputRegion_chr,
+            nCoMethRegions_num = nCoMethRegions_num,
+            coMeth_ls = coMeth_ls
+
+        )
     } else {
 
         out_ContigRegions <- lapply(coMethCpGsAllREgions_ls, `[[`, 1)
