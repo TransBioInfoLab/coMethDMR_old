@@ -29,6 +29,9 @@ as well as additional CpGs.}
 \item{rDropThresh_num}{thershold for min correlation between a cpg with sum
 of the rest of the CpGs}
 
+\item{minPairwiseCorr}{Calculate minimun Pairs wise correlation and use as a filter ?
+Default: NULL. To use this filter set a number between 0 and 1.}
+
 \item{method}{method for computing correlation, can be  "pearson" or "spearman"}
 
 \item{minCpGs}{mininum number of CpGs to be considered a "region".
