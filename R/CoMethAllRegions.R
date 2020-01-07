@@ -109,8 +109,12 @@ CoMethAllRegions <- function(dnam,
 
     }
 
-    cluster <- CreateParallelWorkers(nCores_int, ...)
+    # Reducing memory usage
+    # Since we only evaluate the probes within the closeByRegions the other ones
+    # are not required
+    dnam <- dnam[rownames(dnam) %in% unlist(unname(closeByGenomicRegion_ls)),]
 
+    cluster <- CreateParallelWorkers(nCores_int, ...)
     coMethCpGsAllREgions_ls <- bplapply(
         unname(closeByGenomicRegion_ls),
         FUN = CoMethSingleRegion,
