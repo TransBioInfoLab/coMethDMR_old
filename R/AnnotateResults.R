@@ -37,6 +37,7 @@
 #'    \code{"UTR5"}, \code{"EXON1"}, \code{"GENEBODY"}, \code{"UTR3"}, and
 #'    \code{"ISLAND"}.
 #'
+#' @importFrom dplyr bind_rows bind_cols
 #' @export
 #'
 #' @examples
@@ -54,9 +55,9 @@
 #'    )
 #'
 AnnotateResults <- function(lmmRes_df,
-                            arrayType = c("450k","EPIC"),
-                            nCores_int = 1L,
-                            ...){
+                             arrayType = c("450k","EPIC"),
+                             nCores_int = 1L,
+                             ...){
     ###  Check Inputs  ###
     stopifnot(
         "data.frame" %in% class(lmmRes_df),
@@ -65,31 +66,20 @@ AnnotateResults <- function(lmmRes_df,
     arrayType <- match.arg(arrayType)
     checkAnnotationPkg(arrayType)
 
-    lmmRes_df$start <- as.integer(lmmRes_df$start)
-    lmmRes_df$end   <- as.integer(lmmRes_df$end)
-
     ###  Pull Database  ###
     switch(
         arrayType,
         "450k" = {
-            locations_df <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Locations
             UCSCinfo_df  <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Other
             IslandsUCSCinfo_df <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Islands.UCSC
 
         },
         "EPIC" = {
-
-            locations_df <- IlluminaHumanMethylationEPICanno.ilm10b2.hg19::Locations
             UCSCinfo_df  <- IlluminaHumanMethylationEPICanno.ilm10b2.hg19::Other
             IslandsUCSCinfo_df <- IlluminaHumanMethylationEPICanno.ilm10b2.hg19::Islands.UCSC
 
         }
     )
-
-    # Locations
-    locations_df <- as.data.frame(locations_df)
-    locations_df$cpg <- row.names(locations_df)
-    rownames(locations_df) <- NULL
 
     # UCSC Gene Info
     UCSCinfo_df <- as.data.frame(UCSCinfo_df)
@@ -103,22 +93,17 @@ AnnotateResults <- function(lmmRes_df,
     # UCSC Island Info
     IslandsUCSCinfo_df <- as.data.frame(IslandsUCSCinfo_df)
 
+    probes.list <- lmmRes_df %>%
+        tidyr::unite("region",c("chrom","start","end")) %>%
+        dplyr::pull(region) %>%
+        GetCpGsInAllRegion
+
+    # memory management
+    UCSCinfo_df <- UCSCinfo_df[rownames(UCSCinfo_df) %in% unlist(probes.list),]
+    IslandsUCSCinfo_df <- IslandsUCSCinfo_df[rownames(IslandsUCSCinfo_df) %in% unlist(probes.list),]
 
     ###  Define Wrapper Function  ###
-    AnnotateRow <- function(row_df, loc_df, info_df, island_df, includeType){
-        # browser()
-
-        ###  Filter Data Frames  ###
-        # Extract Row Region
-        chr   <- row_df$chrom
-        start <- row_df$start
-        end   <- row_df$end
-
-        # Find Probes in that Region
-        chr_df  <- loc_df[which(loc_df$chr == chr), ]
-        inRegion_idx <- which(chr_df$pos >= start & chr_df$pos <= end)
-        out_df <- chr_df[inRegion_idx, ]
-        probes_char <- out_df$cpg
+    AnnotateRow <- function(probes_char, info_df, island_df, includeType){
 
         # Find UCSC Annotation Information for those Probes
         infoOut_df <- info_df[probes_char, ]
@@ -157,19 +142,11 @@ AnnotateResults <- function(lmmRes_df,
             #   no   = ""
             # )
         }
-        row_df$UCSC_RefGene_Group <-
-            paste0(unique(refGeneGroup_char), collapse = ";")
-        row_df$UCSC_RefGene_Accession <-
-            paste0(unique(refGeneAcc_char), collapse = ";")
-        row_df$UCSC_RefGene_Name <-
-            paste0(unique(refGeneName_char), collapse = ";")
-        # row_df$probes <-
-        #   paste0(unique(probes_char), collapse = ";")
-        row_df$Relation_to_Island <-
-            paste0(unique(refIslandRelation_char), collapse = ";")
-
-        row_df
-
+        tibble::tibble("UCSC_RefGene_Group" = paste0(refGeneGroup_char, collapse = ";"),
+                       "UCSC_RefGene_Accession" = paste0(refGeneAcc_char, collapse = ";"),
+                       "UCSC_RefGene_Name" = paste0(refGeneName_char, collapse = ";"),
+                       "Relation_to_Island" = paste0(refIslandRelation_char, collapse = ";")
+        )
     }
 
     inclType_logi <- !is.null(lmmRes_df$regionType)
@@ -177,15 +154,14 @@ AnnotateResults <- function(lmmRes_df,
     cluster <- CreateParallelWorkers(nCores_int, ...)
 
     resultsAnno_ls <- bplapply(
-        seq_len(nrow(lmmRes_df)),
-        function(row){
+        probes.list,
+        function(probes){
             AnnotateRow(
-                row_df = lmmRes_df[row, ],
-                loc_df = locations_df,
+                probes_char = probes,
                 info_df = UCSCinfo_df,
                 island_df = IslandsUCSCinfo_df,
                 includeType = inclType_logi
             )},  BPPARAM = cluster
-    )
-    do.call(rbind, resultsAnno_ls)
+    ) %>% dplyr::bind_rows()
+    dplyr::bind_cols(lmmRes_df,resultsAnno_ls)
 }

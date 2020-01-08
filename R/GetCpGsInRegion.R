@@ -58,7 +58,7 @@ GetCpGsInRegion <- function(regionName_char,
 #' @export
 #'
 #' @importFrom tidyr separate %>%
-#' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @importFrom GenomicRanges makeGRangesFromDataFrame makeGRangesListFromDataFrame
 #' @importFrom IRanges subsetByOverlaps
 #'
 #' @examples

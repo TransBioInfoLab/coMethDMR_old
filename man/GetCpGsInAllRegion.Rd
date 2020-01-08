@@ -32,7 +32,7 @@ Extract probe IDs for CpGs located in a genomic region
 \examples{
    GetCpGsInAllRegion(
      regionName_char = c("chr14:74815131-74815316",
-     "chr22:18267969-18268249"),
+                         "chr22:18267969-18268249"),
      arrayType = "450k"
    )
 }
