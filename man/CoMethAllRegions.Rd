@@ -16,7 +16,7 @@ CoMethAllRegions(
   CpGs_ls,
   file = NULL,
   returnAllCpGs = FALSE,
-  output = c("CpGs", "dataframe"),
+  output = c("CpGs", "dataframe", "all"),
   nCores_int = 1L,
   ...
 )
