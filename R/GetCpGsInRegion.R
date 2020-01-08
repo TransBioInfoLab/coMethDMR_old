@@ -62,8 +62,9 @@ GetCpGsInRegion <- function(regionName_char,
 #' @importFrom IRanges subsetByOverlaps
 #'
 #' @examples
-#'    GetCpGsInRegion(
-#'      regionName_char = "chr22:18267969-18268249",
+#'    GetCpGsInAllRegion(
+#'      regionName_char = c("chr14:74815131-74815316",
+#'      "chr22:18267969-18268249"),
 #'      arrayType = "450k"
 #'    )
 GetCpGsInAllRegion <- function(regionName_char,
@@ -88,7 +89,6 @@ GetCpGsInAllRegion <- function(regionName_char,
                              ignore.strand = TRUE)
 
   ### Split the region name in chr and positions ###
-  message("Get regions from name")
   regions.df <- regionName_char %>%
     as.data.frame %>%
     separate(col = ".", into = c("seqnames","start","end"))
@@ -98,8 +98,6 @@ GetCpGsInAllRegion <- function(regionName_char,
 
     CpGlocations.gr <- subsetByOverlaps(CpGlocations.gr, regions.gr)  %>%
       sort(ignore.strand = TRUE)
-
-  message("Iterating over regions... this may take a while")
 
   cluster <- CreateParallelWorkers(nCores_int, ...)
   results <- bplapply(
