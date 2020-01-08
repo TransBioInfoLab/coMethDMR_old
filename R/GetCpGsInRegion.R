@@ -64,7 +64,7 @@ GetCpGsInRegion <- function(regionName_char,
 #' @examples
 #'    GetCpGsInAllRegion(
 #'      regionName_char = c("chr14:74815131-74815316",
-#'      "chr22:18267969-18268249"),
+#'                          "chr22:18267969-18268249"),
 #'      arrayType = "450k"
 #'    )
 GetCpGsInAllRegion <- function(regionName_char,

@@ -292,7 +292,7 @@ cpGsGenomicFeatures <- function (probes.list,
                               fill = ".id",
                               color = ".id",
                               palette = bar.colors,
-                              ylab = "Percentage CpGs",
+                              ylab = "Percentage CpGs (%)",
                               xlab = "Genomic Feature",
                               position = position_dodge(0.8)) +
         theme(legend.title = element_blank(),
