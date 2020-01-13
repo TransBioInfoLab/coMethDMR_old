@@ -15,8 +15,8 @@
 #' @param fg.label Foreground label
 #' @param bg.label Background label
 #' @param type of enrichment to caculate: relation to island ("island") or
-#' UCSC RefGene Group mapped to the probe ("gene"), costumized annotation ("costum")
-#' @param annotation.gr Annotation Granges used only if type is set to "custom",
+#' UCSC RefGene Group mapped to the probe ("gene"), costumized annotation ("customized")
+#' @param annotation.gr Annotation Granges used only if type is set to "customized",
 #' first column of the metadata is used to annotate the probes
 #' @param arrayType Type of array, 450k or EPIC
 #' @param tab.filename Table file name (csv file). Default no file will be output.
@@ -54,7 +54,7 @@ cpGsEnrichment <- function (fg.probes,
                             save.plot = TRUE,
                             plot.filename = "barplot.pdf",
                             annotation.gr,
-                            enrichment.type =  c("island","gene","costum")
+                            enrichment.type =  c("island","gene","customized")
 ){
 
     arrayType <- match.arg(arrayType)
@@ -96,7 +96,7 @@ cpGsEnrichment <- function (fg.probes,
         annot$UCSC_RefGene_Group_hierarchy[grep("3'UTR",annot$UCSC_RefGene_Group_hierarchy)] <- "3'UTR"
         annot$UCSC_RefGene_Group_hierarchy[annot$UCSC_RefGene_Group_hierarchy == ""] <- "Intergenic"
         annot$UCSC_RefGene_Group_hierarchy[is.na(annot$UCSC_RefGene_Group_hierarchy)] <- "Intergenic"
-    }  else if (enrichment.type == "costum") {
+    }  else if (enrichment.type == "customized") {
         probes.gr <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Locations %>%
             makeGRangesFromDataFrame(start.field = "pos",end.field = "pos")
         hits <- findOverlaps(probes.gr,annotation.gr,select = "first")
@@ -167,6 +167,7 @@ cpGsEnrichment <- function (fg.probes,
                               y = "value",
                               x = col.name,
                               fill = "variable",
+                              sort.val = "asc",
                               color = "white",
                               ylab = "Frequency (% Counts)",
                               xlab = gsub("[^[:alnum:] ]"," ",col.name),
@@ -280,10 +281,10 @@ cpGsGenomicFeatures <- function (probes.list,
     })
 
     if(missing(bar.colors)) {
-        bar.colors <- cbPalette <- c("#999999", "#E69F00",
-                                     "#56B4E9", "#009E73",
-                                     "#F0E442", "#0072B2",
-                                     "#D55E00", "#CC79A7")
+        bar.colors <- c("#999999", "#E69F00",
+                        "#56B4E9", "#009E73",
+                        "#F0E442", "#0072B2",
+                        "#D55E00", "#CC79A7")
     }
 
     plot <- ggpubr::ggbarplot(cts.annot,
@@ -291,6 +292,7 @@ cpGsGenomicFeatures <- function (probes.list,
                               x = "x",
                               fill = ".id",
                               color = ".id",
+                              sort.val = "asc",
                               palette = bar.colors,
                               ylab = "Percentage CpGs (%)",
                               xlab = "Genomic Feature",

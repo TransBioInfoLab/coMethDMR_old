@@ -14,7 +14,7 @@ cpGsEnrichment(
   save.plot = TRUE,
   plot.filename = "barplot.pdf",
   annotation.gr,
-  enrichment.type = c("island", "gene", "costum")
+  enrichment.type = c("island", "gene", "customized")
 )
 }
 \arguments{
@@ -34,11 +34,11 @@ cpGsEnrichment(
 
 \item{plot.filename}{filename of the barplot}
 
-\item{annotation.gr}{Annotation Granges used only if type is set to "custom",
+\item{annotation.gr}{Annotation Granges used only if type is set to "customized",
 first column of the metadata is used to annotate the probes}
 
 \item{type}{of enrichment to caculate: relation to island ("island") or
-UCSC RefGene Group mapped to the probe ("gene"), costumized annotation ("costum")}
+UCSC RefGene Group mapped to the probe ("gene"), costumized annotation ("customized")}
 }
 \value{
 A list with a ggplot2 barplo, a table and the list of contigency tables
