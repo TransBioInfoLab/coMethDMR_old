@@ -19,13 +19,17 @@
 #' @param annotation.gr Annotation Granges used only if type is set to "customized",
 #' first column of the metadata is used to annotate the probes
 #' @param arrayType Type of array, 450k or EPIC
+#' @param sort.by.or Sort bars by OR descresenting ? Default FALSE
 #' @param tab.filename Table file name (csv file). Default no file will be output.
+#' @param bar.colors Colors of the bars of each group
 #' @importFrom ggplot2 ggsave position_dodge theme element_blank scale_fill_manual
 #' @importFrom purrr reduce
 #' @importFrom readr write_csv
 #' @importFrom ggpubr ggbarplot
 #' @importFrom reshape2 melt
 #' @importFrom dplyr full_join %>%
+#' @importFrom GenomicRanges findOverlaps
+#' @importFrom S4Vectors values
 #' @return A list with a ggplot2 barplo, a table and the list of contigency tables
 #' @export
 #' @examples
@@ -53,6 +57,8 @@ cpGsEnrichment <- function (fg.probes,
                             arrayType = c("450k","EPIC"),
                             save.plot = TRUE,
                             plot.filename = "barplot.pdf",
+                            bar.colors,
+                            sort.by.or = FALSE,
                             annotation.gr,
                             enrichment.type =  c("island","gene","customized")
 ){
@@ -116,6 +122,7 @@ cpGsEnrichment <- function (fg.probes,
     colnames(bg.cts) <- c(col.name,"background")
 
     cts <- purrr::reduce(.x = list(fg.cts, bg.cts), .f = (full_join))
+    cts[is.na(cts)] <- 0
     cts.freq <- cts
     cts.freq[,2] <- 100 * cts.freq[,2] / sum(cts.freq[,2],na.rm = TRUE)
     cts.freq[,3] <- 100 * cts.freq[,3] / sum(cts.freq[,3],na.rm = TRUE)
@@ -163,12 +170,27 @@ cpGsEnrichment <- function (fg.probes,
         df <- reshape2::melt(cts.freq)
     )
     df$variable <- factor(df$variable, levels = c('background', 'foreground'))
+
+
+    if(missing(bar.colors)) {
+        bar.colors <- c("background" = "#1F77B4",
+                        "foreground" = "#FF7F0D")
+    }
+
+    if(sort.by.or){
+        order <- ret[order(-ret$odds_ratio),col.name]
+        df <- df[plyr::alply(order,1,function(x) which(df$state == x)) %>% unlist(use.names = F),]
+    } else {
+        # Alphabetically
+        df <- df[order(df[[col.name]]),]
+    }
+
     plot <- ggpubr::ggbarplot(df,
                               y = "value",
                               x = col.name,
                               fill = "variable",
-                              sort.val = "asc",
                               color = "white",
+                              palette = bar.colors,
                               ylab = "Frequency (% Counts)",
                               xlab = gsub("[^[:alnum:] ]"," ",col.name),
                               position = position_dodge(0.8)) +
@@ -177,8 +199,7 @@ cpGsEnrichment <- function (fg.probes,
         scale_fill_manual(name = "",
                           labels = c(bg.label,
                                      fg.label),
-                          values = c("background" = "#1F77B4",
-                                     "foreground" = "#FF7F0D"))
+                          values = bar.colors)
 
     colnames(cts)[2:3] <- paste0("cts_",colnames(cts)[2:3])
     colnames(cts.freq)[2:3] <- paste0("freq_",colnames(cts.freq)[2:3])
@@ -211,6 +232,7 @@ cpGsEnrichment <- function (fg.probes,
 #' @param save.plot create a bar plot of frequncy ? Default TRUE.
 #' @param plot.filename filename of the barplot
 #' @param arrayType Type of array, 450k or EPIC
+#' @param bar.colors Colors of the bars of each group
 #' @importFrom ggplot2 ggsave position_dodge theme element_blank scale_fill_manual element_text
 #' @importFrom purrr reduce
 #' @importFrom readr write_csv
@@ -292,7 +314,6 @@ cpGsGenomicFeatures <- function (probes.list,
                               x = "x",
                               fill = ".id",
                               color = ".id",
-                              sort.val = "asc",
                               palette = bar.colors,
                               ylab = "Percentage CpGs (%)",
                               xlab = "Genomic Feature",

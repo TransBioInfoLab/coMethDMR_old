@@ -17,6 +17,8 @@ cpGsGenomicFeatures(
 
 \item{save.plot}{create a bar plot of frequncy ? Default TRUE.}
 
+\item{bar.colors}{Colors of the bars of each group}
+
 \item{plot.filename}{filename of the barplot}
 
 \item{probes}{list of named probes}

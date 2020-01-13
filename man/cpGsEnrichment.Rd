@@ -13,6 +13,8 @@ cpGsEnrichment(
   arrayType = c("450k", "EPIC"),
   save.plot = TRUE,
   plot.filename = "barplot.pdf",
+  bar.colors,
+  sort.by.or = FALSE,
   annotation.gr,
   enrichment.type = c("island", "gene", "customized")
 )
@@ -33,6 +35,10 @@ cpGsEnrichment(
 \item{save.plot}{create a bar plot of frequncy for foreground and background ? Default TRUE.}
 
 \item{plot.filename}{filename of the barplot}
+
+\item{bar.colors}{Colors of the bars of each group}
+
+\item{sort.by.or}{Sort bars by OR descresenting ? Default FALSE}
 
 \item{annotation.gr}{Annotation Granges used only if type is set to "customized",
 first column of the metadata is used to annotate the probes}
