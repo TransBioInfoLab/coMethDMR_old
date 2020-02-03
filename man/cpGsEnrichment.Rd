@@ -10,6 +10,7 @@ cpGsEnrichment(
   fg.label = "foreground",
   bg.label = "background",
   tab.filename,
+  fisher.test.alternative = "two.sided",
   arrayType = c("450k", "EPIC"),
   save.plot = TRUE,
   plot.filename = "barplot.pdf",
@@ -29,6 +30,9 @@ cpGsEnrichment(
 \item{bg.label}{Background label}
 
 \item{tab.filename}{Table file name (csv file). Default no file will be output.}
+
+\item{fisher.test.alternative}{indicates the alternative hypothesis and must
+be one of "two.sided" (default), "greater" or "less".}
 
 \item{arrayType}{Type of array, 450k or EPIC}
 

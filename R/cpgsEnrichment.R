@@ -22,6 +22,8 @@
 #' @param sort.by.or Sort bars by OR descresenting ? Default FALSE
 #' @param tab.filename Table file name (csv file). Default no file will be output.
 #' @param bar.colors Colors of the bars of each group
+#' @param fisher.test.alternative  indicates the alternative hypothesis and must
+#' be one of "two.sided" (default), "greater" or "less".
 #' @importFrom ggplot2 ggsave position_dodge theme element_blank scale_fill_manual
 #' @importFrom purrr reduce
 #' @importFrom readr write_csv
@@ -54,6 +56,7 @@ cpGsEnrichment <- function (fg.probes,
                             fg.label = "foreground",
                             bg.label = "background",
                             tab.filename,
+                            fisher.test.alternative = "two.sided",
                             arrayType = c("450k","EPIC"),
                             save.plot = TRUE,
                             plot.filename = "barplot.pdf",
@@ -151,7 +154,7 @@ cpGsEnrichment <- function (fg.probes,
                            if(any(is.na(m))) {
                                ft <- data.frame(p.value = NA, estimate = NA)
                            } else {
-                               ft <- fisher.test(m,alternative = 'greater')
+                               ft <- fisher.test(m,alternative = fisher.test.alternative)
                            }
                            df <- data.frame(
                                "p_value" = ft$p.value,
