@@ -181,11 +181,16 @@ cpGsEnrichment <- function (fg.probes,
     }
 
     if(sort.by.or){
-        order <- ret[order(-ret$odds_ratio),col.name]
-        df <- df[plyr::alply(order,1,function(x) which(df$state == x)) %>% unlist(use.names = F),]
+        order <- unique(ret[order(-ret$odds_ratio),col.name])
+    } else if (enrichment.type == "gene") {
+        order <- c("TSS1500","TSS200","5'UTR","1stExon","Body","3'UTR","Intergnenic")
+        df <- df[plyr::alply(order,1,function(x) which(df[[col.name]] == x)) %>% unlist(use.names = F),]
+    } else if (enrichment.type == "island") {
+        order <- c("Shelf","Shore","Island","OpenSea")
+        df <- df[plyr::alply(order,1,function(x) which(df[[col.name]] == x)) %>% unlist(use.names = F),]
     } else {
         # Alphabetically
-        df <- df[order(df[[col.name]]),]
+        order <- sort(unique(df[[col.name]]))
     }
 
     plot <- ggpubr::ggbarplot(df,
@@ -193,6 +198,7 @@ cpGsEnrichment <- function (fg.probes,
                               x = col.name,
                               fill = "variable",
                               color = "white",
+                              order = order,
                               palette = bar.colors,
                               ylab = "Frequency (% Counts)",
                               xlab = gsub("[^[:alnum:] ]"," ",col.name),
