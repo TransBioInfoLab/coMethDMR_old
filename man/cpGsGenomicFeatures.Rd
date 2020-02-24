@@ -49,4 +49,21 @@ result.list <- cpGsGenomicFeatures(probes.list = probes.list,
                                arrayType = "450k",
                                     bar.colors = c("#1F77B4", "#FF7F0D"),
                                    save.plot = FALSE)
+file <- paste0("https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations",
+               "/ChmmModels/coreMarks/jointModel/final/E073_15_coreMarks_segments.bed")
+ChmmModels <- readr::read_tsv(file,col_names = FALSE,col_types = readr::cols())
+colnames(ChmmModels) <- c("chr","start","end","state")
+states <- readr::read_csv("../../DNAm_RNA/data/chromHMM_labels.csv",col_names = FALSE)
+states$X1 <- paste0("E",states$X1)
+ChmmModels$state <- states$X3[match(ChmmModels$state,states$X1)]
+ChmmModels.gr <- makeGRangesFromDataFrame(ChmmModels,keep.extra.columns = TRUE)
+regions.and.single.plot <-
+result.list <- cpGsGenomicFeatures(
+  probes.list,
+   annotation.gr = ChmmModels.gr,
+   plot.width = 12,
+   enrichment.type = "customized",
+   save.plot = FALSE
+)
+
 }
