@@ -183,7 +183,7 @@ cpGsEnrichment <- function (fg.probes,
     if(sort.by.or){
         order <- unique(ret[order(-ret$odds_ratio),col.name])
     } else if (enrichment.type == "gene") {
-        order <- c("TSS1500","TSS200","5'UTR","1stExon","Body","3'UTR","Intergnenic")
+        order <- c("TSS1500","TSS200","5'UTR","1stExon","Body","3'UTR","Intergenic")
         df <- df[plyr::alply(order,1,function(x) which(df[[col.name]] == x)) %>% unlist(use.names = F),]
     } else if (enrichment.type == "island") {
         order <- c("Shelf","Shore","Island","OpenSea")
@@ -301,10 +301,11 @@ cpGsGenomicFeatures <- function (probes.list,
         cts <- plyr::count(cts);
         cts2 <- annot[x, "Relation_to_Island"]
         cts2 <- plyr::count(cts2);
-        cts <- rbind(cts,cts2,
-                     data.frame("x" = "Enhancer",
-                                freq = sum(x %in% enhancer.probes)
-                     )
+        cts <- rbind(cts,
+                     cts2
+                     #data.frame("x" = "Enhancer",
+                     #           freq = sum(x %in% enhancer.probes)
+                     #)
         )
         cts$counts <- cts$freq
         cts$freq <- (100 * cts$freq)/length(x)
@@ -318,11 +319,25 @@ cpGsGenomicFeatures <- function (probes.list,
                         "#D55E00", "#CC79A7")
     }
 
+    order <-  c(
+        "TSS1500",
+        "TSS200",
+        "5'UTR",
+        "1stExon",
+        "Body",
+        "3'UTR",
+        "Intergenic",
+        "Shelf",
+        "Shore",
+        "Island",
+        "OpenSea"
+    )
     plot <- ggpubr::ggbarplot(cts.annot,
                               y = "freq",
                               x = "x",
                               fill = ".id",
                               color = ".id",
+                              order = order,
                               palette = bar.colors,
                               ylab = "Percentage CpGs (%)",
                               xlab = "Genomic Feature",
