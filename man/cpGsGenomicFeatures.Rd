@@ -9,6 +9,11 @@ cpGsGenomicFeatures(
   arrayType = c("450k", "EPIC"),
   save.plot = TRUE,
   bar.colors,
+  plot.width = 7,
+  plot.height = 7,
+  plot.title = NULL,
+  annotation.gr = NULL,
+  enrichment.type = c("island_gene", "customized"),
   plot.filename = "barplot.pdf"
 )
 }
@@ -19,9 +24,15 @@ cpGsGenomicFeatures(
 
 \item{bar.colors}{Colors of the bars of each group}
 
+\item{plot.width}{Plot width}
+
+\item{plot.title}{A string title to the plot}
+
 \item{plot.filename}{filename of the barplot}
 
 \item{probes}{list of named probes}
+
+\item{plot.hight}{Plot height}
 }
 \value{
 A list with a ggplot2 barplo, a table and the list of contigency tables

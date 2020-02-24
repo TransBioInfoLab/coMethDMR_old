@@ -242,6 +242,9 @@ cpGsEnrichment <- function (fg.probes,
 #' @param plot.filename filename of the barplot
 #' @param arrayType Type of array, 450k or EPIC
 #' @param bar.colors Colors of the bars of each group
+#' @param plot.title A string title to the plot
+#' @param plot.width Plot width
+#' @param plot.hight Plot height
 #' @importFrom ggplot2 ggsave position_dodge theme element_blank scale_fill_manual element_text
 #' @importFrom purrr reduce
 #' @importFrom readr write_csv
@@ -262,55 +265,101 @@ cpGsGenomicFeatures <- function (probes.list,
                                  arrayType = c("450k","EPIC"),
                                  save.plot = TRUE,
                                  bar.colors,
+                                 plot.width = 7,
+                                 plot.height = 7,
+                                 plot.title = NULL,
+                                 annotation.gr = NULL,
+                                 enrichment.type =  c("island_gene","customized"),
                                  plot.filename = "barplot.pdf"
 ){
     arrayType <- match.arg(arrayType)
+    enrichment.type <- match.arg(enrichment.type)
 
     if (missing(probes.list)) stop("Please, set fg.probes")
 
+    if(enrichment.type == "island_gene"){
+        if (arrayType == "450k") {
+            annot <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Islands.UCSC
+        } else {
+            annot <- IlluminaHumanMethylationEPICanno.ilm10b2.hg19::Islands.UCSC
+        }
+        annot$Relation_to_Island <-  gsub("N_|S_","",annot$Relation_to_Island)
 
-    if (arrayType == "450k") {
-        annot <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Islands.UCSC
-    } else {
-        annot <- IlluminaHumanMethylationEPICanno.ilm10b2.hg19::Islands.UCSC
-    }
-    annot$Relation_to_Island <-  gsub("N_|S_","",annot$Relation_to_Island)
+        if (arrayType == "450k") {
+            annot.other <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Other
+        } else {
+            annot.other <- IlluminaHumanMethylationEPICanno.ilm10b2.hg19::Other
+        }
 
-    if (arrayType == "450k") {
-        annot.other <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Other
-    } else {
-        annot.other <- IlluminaHumanMethylationEPICanno.ilm10b2.hg19::Other
-    }
+        annot.other$UCSC_RefGene_Group_hierarchy <- annot.other$UCSC_RefGene_Group
+        annot.other$UCSC_RefGene_Group_hierarchy[grep("TSS200",annot.other$UCSC_RefGene_Group_hierarchy)] <- "TSS200"
+        annot.other$UCSC_RefGene_Group_hierarchy[grep("TSS1500",annot.other$UCSC_RefGene_Group_hierarchy)] <- "TSS1500"
+        annot.other$UCSC_RefGene_Group_hierarchy[grep("5'UTR",annot.other$UCSC_RefGene_Group_hierarchy)] <- "5'UTR"
+        annot.other$UCSC_RefGene_Group_hierarchy[grep("1stExon",annot.other$UCSC_RefGene_Group_hierarchy)] <- "1stExon"
+        annot.other$UCSC_RefGene_Group_hierarchy[grep("Body",annot.other$UCSC_RefGene_Group_hierarchy)] <- "Body"
+        annot.other$UCSC_RefGene_Group_hierarchy[grep("3'UTR",annot.other$UCSC_RefGene_Group_hierarchy)] <- "3'UTR"
+        annot.other$UCSC_RefGene_Group_hierarchy[annot.other$UCSC_RefGene_Group_hierarchy == ""] <- "Intergenic"
+        annot.other$UCSC_RefGene_Group_hierarchy[is.na(annot.other$UCSC_RefGene_Group_hierarchy)] <- "Intergenic"
+        if(!is(probes.list,"list")) {
+            probes.list <- list("Probes" = probes.list)
+        }
+        cts.annot <- plyr::ldply(probes.list, function(x){
+            cts <- annot.other[x, "UCSC_RefGene_Group_hierarchy"]
+            cts <- plyr::count(cts);
+            cts2 <- annot[x, "Relation_to_Island"]
+            cts2 <- plyr::count(cts2);
+            cts <- rbind(cts,
+                         cts2
+                         #data.frame("x" = "Enhancer",
+                         #           freq = sum(x %in% enhancer.probes)
+                         #)
+            )
+            cts$counts <- cts$freq
+            cts$freq <- (100 * cts$freq)/length(x)
+            return(cts)
+        })
 
-    annot.other$UCSC_RefGene_Group_hierarchy <- annot.other$UCSC_RefGene_Group
-    annot.other$UCSC_RefGene_Group_hierarchy[grep("TSS200",annot.other$UCSC_RefGene_Group_hierarchy)] <- "TSS200"
-    annot.other$UCSC_RefGene_Group_hierarchy[grep("TSS1500",annot.other$UCSC_RefGene_Group_hierarchy)] <- "TSS1500"
-    annot.other$UCSC_RefGene_Group_hierarchy[grep("5'UTR",annot.other$UCSC_RefGene_Group_hierarchy)] <- "5'UTR"
-    annot.other$UCSC_RefGene_Group_hierarchy[grep("1stExon",annot.other$UCSC_RefGene_Group_hierarchy)] <- "1stExon"
-    annot.other$UCSC_RefGene_Group_hierarchy[grep("Body",annot.other$UCSC_RefGene_Group_hierarchy)] <- "Body"
-    annot.other$UCSC_RefGene_Group_hierarchy[grep("3'UTR",annot.other$UCSC_RefGene_Group_hierarchy)] <- "3'UTR"
-    annot.other$UCSC_RefGene_Group_hierarchy[annot.other$UCSC_RefGene_Group_hierarchy == ""] <- "Intergenic"
-    annot.other$UCSC_RefGene_Group_hierarchy[is.na(annot.other$UCSC_RefGene_Group_hierarchy)] <- "Intergenic"
-
-
-    if(!is(probes.list,"list")) {
-        probes.list <- list("Probes" = probes.list)
-    }
-    cts.annot <- plyr::ldply(probes.list, function(x){
-        cts <- annot.other[x, "UCSC_RefGene_Group_hierarchy"]
-        cts <- plyr::count(cts);
-        cts2 <- annot[x, "Relation_to_Island"]
-        cts2 <- plyr::count(cts2);
-        cts <- rbind(cts,
-                     cts2
-                     #data.frame("x" = "Enhancer",
-                     #           freq = sum(x %in% enhancer.probes)
-                     #)
+        order <-  c(
+            "TSS1500",
+            "TSS200",
+            "5'UTR",
+            "1stExon",
+            "Body",
+            "3'UTR",
+            "Intergenic",
+            "Shelf",
+            "Shore",
+            "Island",
+            "OpenSea"
         )
-        cts$counts <- cts$freq
-        cts$freq <- (100 * cts$freq)/length(x)
-        return(cts)
-    })
+    }  else if (enrichment.type == "customized") {
+        if(is.null(annotation.gr)){
+            stop("Set annotation.gr for customized option")
+        }
+        probes.gr <- IlluminaHumanMethylation450kanno.ilmn12.hg19::Locations %>%
+            makeGRangesFromDataFrame(start.field = "pos",end.field = "pos")
+        hits <- findOverlaps(probes.gr,annotation.gr,select = "first")
+        col.name <- names(values(annotation.gr))[1]
+        annot <- data.frame(row.names = names(probes.gr),
+                            values(annotation.gr)[,1][hits],stringsAsFactors = FALSE)
+        colnames(annot) <- col.name
+
+        if(!is(probes.list,"list")) {
+            probes.list <- list("Probes" = probes.list)
+        }
+        cts.annot <- plyr::ldply(probes.list, function(x){
+            cts <- annot[x,]
+            cts <- plyr::count(cts);
+            cts$counts <- cts$freq
+            cts$freq <- (100 * cts$freq)/length(x)
+            missing <- annot %>% dplyr::pull() %>% unique %>% setdiff(cts$x)
+            if(length(missing)) cts <- rbind(cts,data.frame("x" = missing, "freq" = 0, "counts" = 0))
+            return(cts)
+        })
+        order <- cts.annot$x[order(cts.annot$counts)] %>% unique
+    }
+
+
 
     if(missing(bar.colors)) {
         bar.colors <- c("#999999", "#E69F00",
@@ -319,19 +368,7 @@ cpGsGenomicFeatures <- function (probes.list,
                         "#D55E00", "#CC79A7")
     }
 
-    order <-  c(
-        "TSS1500",
-        "TSS200",
-        "5'UTR",
-        "1stExon",
-        "Body",
-        "3'UTR",
-        "Intergenic",
-        "Shelf",
-        "Shore",
-        "Island",
-        "OpenSea"
-    )
+
     plot <- ggpubr::ggbarplot(cts.annot,
                               y = "freq",
                               x = "x",
@@ -344,12 +381,14 @@ cpGsGenomicFeatures <- function (probes.list,
                               position = position_dodge(0.8)) +
         theme(legend.title = element_blank(),
               axis.text.x = element_text(angle = 90, hjust = 1))
-
+    if(!is.null(plot.title)){
+        plot <- plot + ggtitle(plot.title)
+    }
     if(save.plot){
-        ggsave(plot.filename, plot = plot)
+        ggsave(plot.filename, plot = plot, width = plot.width,height = plot.height)
     }
 
-    return(list("table" =  cts.annot,
+    return(list("table" = cts.annot,
                 "plot" = plot))
 }
 
