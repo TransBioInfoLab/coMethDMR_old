@@ -373,14 +373,17 @@ cpGsGenomicFeatures <- function (probes.list,
             if(length(missing)) cts <- rbind(cts,data.frame("x" = missing, "freq" = 0, "counts" = 0))
             return(cts)
         })
-        order <- cts.annot$x[order(cts.annot$counts)] %>% unique
+        # order <- cts.annot$x[order(cts.annot$counts)] %>% unique
+        order <- sort(unique(annot[[col.name]]))
+
     }
 
 
 
     if(missing(bar.colors)) {
-        bar.colors <- c("#999999", "#E69F00",
-                        "#56B4E9", "#009E73",
+        bar.colors <- c("#999999",
+                        "#56B4E9", "#E69F00",
+                        "#009E73",
                         "#F0E442", "#0072B2",
                         "#D55E00", "#CC79A7")
     }
