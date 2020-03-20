@@ -169,6 +169,11 @@ cpGsEnrichment <- function (fg.probes,
     ret$X1 <- NULL
     ret[[col.name]] <- cts[,1]  %>% as.character()
 
+    # Adding symbols and pvalues to table
+    cuts <- rev(c(Inf, 0.05, 0.01, 0.001, 0.0001, -Inf))
+    labs <- rev(c("ns", "*", "**", "***","****"))
+    ret$p_value_symbol <- labs[findInterval(ret$p_value,cuts)]
+
     suppressMessages(
         df <- reshape2::melt(cts.freq)
     )
@@ -209,6 +214,17 @@ cpGsEnrichment <- function (fg.probes,
                           labels = c(bg.label,
                                      fg.label),
                           values = bar.colors)
+
+    # Addd pvalue significance
+    y.pos <- df %>% dplyr::group_by_(col.name) %>% dplyr::summarise(n = max(value))
+    y.pos <- y.pos[match(unique(ret[[col.name]]),y.pos[[col.name]]),]
+    y.pos <- y.pos %>% pull(n)
+    plot <- plot + geom_text(data = ret,
+                             aes_(label = as.name("p_value_symbol"),
+                                  x = as.name(col.name),
+                                  y = y.pos),
+                             position = position_dodge(width = 0.8),
+                             vjust = -0.6)
 
     colnames(cts)[2:3] <- paste0("cts_",colnames(cts)[2:3])
     colnames(cts.freq)[2:3] <- paste0("freq_",colnames(cts.freq)[2:3])
