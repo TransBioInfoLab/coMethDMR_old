@@ -14,7 +14,7 @@ The latest version can be installed by
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, results='hide'}
 library(devtools)
-install_github("lissettegomez/coMethDMR")
+install_github("TransBioInfoLab/coMethDMR")
 ```
 After installation, the coMethDMR package can be loaded into R using:
 
